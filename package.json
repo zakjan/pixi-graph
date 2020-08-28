@@ -1,0 +1,49 @@
+{
+  "name": "pixi-graph",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "pixi",
+    "graph"
+  ],
+  "license": "MIT",
+  "author": "Jan Zak <zj@zakjan.cz>",
+  "repository": "github:zakjan/pixi-graph",
+  "main": "dist/pixi-graph.cjs.js",
+  "module": "dist/pixi-graph.esm.js",
+  "browser": "dist/pixi-graph.umd.min.js",
+  "types": "dist/pixi-graph.d.ts",
+  "scripts": {
+    "build": "rimraf dist && rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@pixi-essentials/cull": "^1.0.9",
+    "color-rgba": "^2.2.3",
+    "deepmerge": "^4.2.2",
+    "pixi-viewport": "^4.15.0"
+  },
+  "peerDependencies": {
+    "pixi.js": "^5.3.3",
+    "graphology-types": "^0.18.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@types/color-rgba": "^2.1.0",
+    "@types/deepmerge": "^2.2.0",
+    "@types/resize-observer-browser": "^0.1.4",
+    "graphology-types": "^0.18.0",
+    "pixi.js": "^5.3.3",
+    "resource-loader": "^4.0.0-rc4",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.32.0",
+    "rollup-plugin-dts": "^1.4.13",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.28.0",
+    "rollup-plugin-visualizer": "^4.1.1",
+    "typescript": "^4.0.3"
+  }
+}
