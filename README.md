@@ -6,7 +6,9 @@
 
 Graph visualization library using [PIXI.js](https://www.pixijs.com/) and [Graphology](https://graphology.github.io/).
 
-⚠️ **This is a public beta release!** Developing a new full-featured graph visualization library is a significant effort. I'd appreciate your feedback to prioritize new features by filling in a [survey](https://link.zakjan.cz/pixi-graph-survey).
+⚠️ **This is a pre-release, use at your own risk!** Upcoming features can introduce breaking changes in the API.
+
+Developing a full-featured graph visualization library is a significant effort. I'd appreciate your feedback to prioritize new features by filling in a [survey](https://link.zakjan.cz/pixi-graph-survey).
 
 [Demo](https://zakjan.github.io/pixi-graph/)
 
@@ -74,6 +76,10 @@ const style = {
 
 const pixiGraph = new PixiGraph.PixiGraph({ ..., style });
 ```
+
+#### Colors
+
+Colors are resolved with [color-rgba](https://github.com/colorjs/color-rgba). The following CSS colors strings are supported: named colors, hex, short-hand hex, RGB, RGBA, HSL, HSLA.
 
 #### Webfonts
 
