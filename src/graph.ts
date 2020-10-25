@@ -78,7 +78,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   nodeKeyToNodeGfx = new Map<string, PIXI.Container>();
   nodeKeyToNodeLabelGfx = new Map<string, PIXI.Container>();
   edgeKeyToEdgeGfx = new Map<string, PIXI.Container>();
-  renderRequestId: number | null = null;
 
   // event state
   hoveredNodeKey: string | null = null;
@@ -127,12 +126,10 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       transparent: true,
       antialias: true,
       autoDensity: true,
-      autoStart: false // disable automatic rendering by ticker, render manually instead, only when needed
     });
     this.container.appendChild(this.app.view);
 
     this.app.view.addEventListener('wheel', event => { event.preventDefault() });
-    // this.app.renderer.on('postrender', () => { console.log('render'); });
 
     this.textureCache = new TextureCache(this.app);
 
@@ -151,16 +148,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       .clampZoom({ maxScale: 1 });
     this.app.stage.addChild(this.viewport);
 
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.nodeKeyToNodeLabelGfx.size > 0) {
-        this.app.resize();
-        this.viewport.resize(this.container.clientWidth, this.container.clientHeight, worldWidth, worldHeight);
-        this.updateGraphVisibility();
-        this.requestRender();
-      }
-    });
-    this.resizeObserver.observe(this.container);
-
     // create layers
     this.edgeLayer = new PIXI.Container();
     this.frontEdgeLayer = new PIXI.Container();
@@ -175,12 +162,30 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.viewport.addChild(this.frontNodeLayer);
     this.viewport.addChild(this.frontNodeLabelLayer);
 
+    this.resizeObserver = new ResizeObserver(() => {
+      this.app.resize();
+      this.viewport.resize(this.container.clientWidth, this.container.clientHeight, worldWidth, worldHeight);
+      this.updateGraphVisibility();
+    });
+
     // preload resources
     if (this.resources) {
       this.app.loader.add(this.resources);
     }
     this.app.loader.load(() => {
-      this.render();
+      // initial draw
+      this.createGraph();
+      this.updateGraphStyle();
+      this.resetViewport();
+
+      this.viewport.on('frame-end', () => {
+        if (this.viewport.dirty) {
+          this.updateGraphVisibility();
+          this.viewport.dirty = false;
+        }
+      });
+
+      this.resizeObserver.observe(this.container);
     });
   }
 
@@ -195,22 +200,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   resetViewport() {
     this.viewport.center = new PIXI.Point(this.viewport.worldWidth / 2, this.viewport.worldHeight / 2);
     this.viewport.fitWorld(true);
-  }
-
-  private render() {
-    // initial draw
-    this.createGraph();
-    this.updateGraphStyle();
-    this.requestRender();
-    this.resetViewport();
-
-    this.viewport.on('frame-end', () => {
-      if (this.viewport.dirty) {
-        this.updateGraphVisibility();
-        this.requestRender();
-        this.viewport.dirty = false;
-      }
-    });
   }
 
   private onHoverNode(nodeKey: string) {
@@ -237,7 +226,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     // update style
     const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
     this.updateNodeStyle(nodeKey, nodeAttributes);
-    this.requestRender();
   }
 
   private onUnhoverNode(nodeKey: string) {
@@ -264,7 +252,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     // update style
     const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
     this.updateNodeStyle(nodeKey, nodeAttributes);
-    this.requestRender();
   }
 
   private onHoverEdge(edgeKey: string) {
@@ -287,7 +274,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const sourceNodeAttributes = this.graph.getNodeAttributes(this.graph.source(edgeKey));
     const targetNodeAttributes = this.graph.getNodeAttributes(this.graph.target(edgeKey));
     this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
-    this.requestRender();
   }
 
   private onUnhoverEdge(edgeKey: string) {
@@ -310,7 +296,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const sourceNodeAttributes = this.graph.getNodeAttributes(this.graph.source(edgeKey));
     const targetNodeAttributes = this.graph.getNodeAttributes(this.graph.target(edgeKey));
     this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
-    this.requestRender();
   }
 
   private onClickNode(nodeKey: string) {
@@ -341,7 +326,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.graph.forEachEdge(nodeKey, (edgeKey, edgeAttributes, _sourceNodeKey, _targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
       this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
     });
-    this.requestRender();
   }
 
   private onDocumentMouseMove(event: MouseEvent) {
@@ -584,23 +568,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     });
   }
 
-  private requestRender() {
-    if (this.renderRequestId) {
-      return;
-    }
-
-    this.renderRequestId = window.requestAnimationFrame(() => {
-      this.app.render();
-      this.renderRequestId = null;
-    });
-  }
-
   destroy() {
-    if (this.renderRequestId) {
-      window.cancelAnimationFrame(this.renderRequestId);
-      this.renderRequestId = null;
-    }
-
     this.resizeObserver.disconnect();
     this.resizeObserver = undefined!;
 
