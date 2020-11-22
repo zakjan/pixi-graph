@@ -4,20 +4,12 @@ import { Cull } from '@pixi-essentials/cull';
 import * as Graphology from 'graphology-types';
 import * as ResourceLoader from 'resource-loader';
 import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
-import { colorToPixi } from './color';
-import { GraphStyle, GraphStyleDefinition, resolveStyleDefinitions } from './style';
-import { TextType, textToPixi } from './text';
+import { GraphStyleDefinition, NodeStyle, EdgeStyle, resolveStyleDefinitions } from './style';
+import { TextType } from './text';
 import { TextureCache } from './textures';
-
-const WHITE = 0xffffff;
-
-const DELIMETER = '::';
-const NODE_CIRCLE = 'NODE_CIRCLE';
-const NODE_CIRCLE_BORDER = 'NODE_CIRCLE_BORDER';
-const NODE_ICON = 'NODE_ICON';
-const NODE_LABEL_BACKGROUND = 'NODE_LABEL_BACKGROUND';
-const NODE_LABEL_TEXT = 'NODE_LABEL_TEXT';
-const EDGE_LINE = 'EDGE_LINE';
+import { createNode, updateNodeStyle, updateNodeVisibility } from './renderers/node';
+import { createNodeLabel, updateNodeLabelStyle, updateNodeLabelVisibility } from './renderers/node-label';
+import { createEdge, updateEdgeStyle, updateEdgeVisibility } from './renderers/edge';
 
 const DEFAULT_STYLE: GraphStyleDefinition = {
   node: {
@@ -271,9 +263,11 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // update style
     const edgeAttributes = this.graph.getEdgeAttributes(edgeKey);
-    const sourceNodeAttributes = this.graph.getNodeAttributes(this.graph.source(edgeKey));
-    const targetNodeAttributes = this.graph.getNodeAttributes(this.graph.target(edgeKey));
-    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
+    const sourceNodeKey = this.graph.source(edgeKey);
+    const targetNodeKey = this.graph.target(edgeKey);
+    const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
+    const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
+    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
   }
 
   private onUnhoverEdge(edgeKey: string) {
@@ -293,9 +287,11 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // update style
     const edgeAttributes = this.graph.getEdgeAttributes(edgeKey);
-    const sourceNodeAttributes = this.graph.getNodeAttributes(this.graph.source(edgeKey));
-    const targetNodeAttributes = this.graph.getNodeAttributes(this.graph.target(edgeKey));
-    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
+    const sourceNodeKey = this.graph.source(edgeKey);
+    const targetNodeKey = this.graph.target(edgeKey);
+    const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
+    const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
+    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
   }
 
   private onClickNode(nodeKey: string) {
@@ -323,8 +319,8 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     // update style
     const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
     this.updateNodeStyle(nodeKey, nodeAttributes);
-    this.graph.forEachEdge(nodeKey, (edgeKey, edgeAttributes, _sourceNodeKey, _targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
-      this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
+    this.graph.forEachEdge(nodeKey, (edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
+      this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
     });
   }
 
@@ -361,24 +357,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     nodeGfx.on('mouseupoutside', () => this.onUnclickNode());
     this.nodeLayer.addChild(nodeGfx);
     this.nodeKeyToNodeGfx.set(nodeKey, nodeGfx);
-
-    // nodeGfx -> nodeCircle
-    const nodeCircle = new PIXI.Sprite();
-    nodeCircle.name = NODE_CIRCLE;
-    nodeCircle.anchor.set(0.5);
-    nodeGfx.addChild(nodeCircle);
-
-    // nodeGfx -> nodeCircleBorder
-    const nodeCircleBorder = new PIXI.Sprite();
-    nodeCircleBorder.name = NODE_CIRCLE_BORDER;
-    nodeCircleBorder.anchor.set(0.5);
-    nodeGfx.addChild(nodeCircleBorder);
-
-    // nodeGfx -> nodeIcon
-    const nodeIcon = new PIXI.Sprite();
-    nodeIcon.name = NODE_ICON;
-    nodeIcon.anchor.set(0.5);
-    nodeGfx.addChild(nodeIcon);
+    createNode(nodeGfx);
 
     // nodeLabelGfx
     const nodeLabelGfx = new PIXI.Container();
@@ -392,18 +371,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     nodeLabelGfx.on('mouseupoutside', () => this.onUnclickNode());
     this.nodeLabelLayer.addChild(nodeLabelGfx);
     this.nodeKeyToNodeLabelGfx.set(nodeKey, nodeLabelGfx);
-
-    // nodeLabelGfx -> nodeLabelBackground
-    const nodeLabelBackground = new PIXI.Sprite(PIXI.Texture.WHITE);
-    nodeLabelBackground.name = NODE_LABEL_BACKGROUND;
-    nodeLabelBackground.anchor.set(0.5);
-    nodeLabelGfx.addChild(nodeLabelBackground);
-
-    // nodeLabelGfx -> nodeLabelText
-    const nodeLabelText = new PIXI.Sprite();
-    nodeLabelText.name = NODE_LABEL_TEXT;
-    nodeLabelText.anchor.set(0.5);
-    nodeLabelGfx.addChild(nodeLabelText);
+    createNodeLabel(nodeLabelGfx);
   }
 
   private createEdge(edgeKey: string) {
@@ -416,12 +384,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     edgeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.onUnhoverEdge(event.currentTarget.name));
     this.edgeLayer.addChild(edgeGfx);
     this.edgeKeyToEdgeGfx.set(edgeKey, edgeGfx);
-
-    // edgeGfx -> edgeLine
-    const edgeLine = new PIXI.Sprite(PIXI.Texture.WHITE);
-    edgeLine.name = EDGE_LINE;
-    edgeLine.anchor.set(0.5, 0);
-    edgeGfx.addChild(edgeLine);
+    createEdge(edgeGfx);
   }
 
   private updateGraphStyle() {
@@ -429,106 +392,43 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       this.updateNodeStyle(nodeKey, nodeAttributes);
     });
 
-    this.graph.forEachEdge((edgeKey, edgeAttributes, _sourceNodeKey, _targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
-      this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeAttributes, targetNodeAttributes);
+    this.graph.forEachEdge((edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
+      this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
     });
   }
 
   private updateNodeStyle(nodeKey: string, nodeAttributes: NodeAttributes) {
     const hover = this.hoveredNodeKey === nodeKey;
     const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node, hover ? this.hoverStyle.node : undefined];
-    const nodeStyle = resolveStyleDefinitions<GraphStyle['node'], NodeAttributes>(nodeStyleDefinitions, nodeAttributes);
-    const nodeOuterSize = nodeStyle.size + nodeStyle.border.width;
+    const nodeStyle = resolveStyleDefinitions<NodeStyle, NodeAttributes>(nodeStyleDefinitions, nodeAttributes);
 
     // nodeGfx
     const nodeGfx = this.nodeKeyToNodeGfx.get(nodeKey)!;
     nodeGfx.x = nodeAttributes.x;
     nodeGfx.y = nodeAttributes.y;
-    nodeGfx.hitArea = new PIXI.Circle(0, 0, nodeOuterSize);
-
-    // nodeGfx -> nodeCircle
-    const nodeCircle = nodeGfx.getChildByName(NODE_CIRCLE) as PIXI.Sprite;
-    const nodeCircleTextureKey = [NODE_CIRCLE, nodeStyle.size].join(DELIMETER);
-    const nodeCircleTexture = this.textureCache.get(nodeCircleTextureKey, () => {
-      const graphics = new PIXI.Graphics();
-      graphics.beginFill(WHITE);
-      graphics.drawCircle(nodeStyle.size, nodeStyle.size, nodeStyle.size);
-      return graphics;
-    });
-    nodeCircle.texture = nodeCircleTexture;
-    [nodeCircle.tint, nodeCircle.alpha] = colorToPixi(nodeStyle.color);
-
-    // nodeGfx -> nodeCircleBorder
-    const nodeCircleBorder = nodeGfx.getChildByName(NODE_CIRCLE_BORDER) as PIXI.Sprite;
-    const nodeCircleBorderTextureKey = [NODE_CIRCLE_BORDER, nodeStyle.size, nodeStyle.border.width].join(DELIMETER);
-    const nodeCircleBorderTexture = this.textureCache.get(nodeCircleBorderTextureKey, () => {
-      const graphics = new PIXI.Graphics();
-      graphics.lineStyle(nodeStyle.border.width, WHITE);
-      graphics.drawCircle(nodeOuterSize, nodeOuterSize, nodeStyle.size);
-      return graphics;
-    });
-    nodeCircleBorder.texture = nodeCircleBorderTexture;
-    [nodeCircleBorder.tint, nodeCircleBorder.alpha] = colorToPixi(nodeStyle.border.color);
-
-    // nodeGfx -> nodeIcon
-    const nodeIcon = nodeGfx.getChildByName(NODE_ICON) as PIXI.Sprite;
-    const nodeIconTextureKey = [NODE_ICON, nodeStyle.icon.fontFamily, nodeStyle.icon.fontSize, nodeStyle.icon.content].join(DELIMETER);
-    const nodeIconTexture = this.textureCache.get(nodeIconTextureKey, () => {
-      const text = textToPixi(nodeStyle.icon.type, nodeStyle.icon.content, {
-        fontFamily: nodeStyle.icon.fontFamily,
-        fontSize: nodeStyle.icon.fontSize
-      });
-      return text;
-    });
-    nodeIcon.texture = nodeIconTexture;
-    [nodeIcon.tint, nodeIcon.alpha] = colorToPixi(nodeStyle.icon.color);
-    nodeGfx.addChild(nodeIcon);
+    updateNodeStyle(nodeGfx, nodeStyle, this.textureCache);
 
     // nodeLabelGfx
     const nodeLabelGfx = this.nodeKeyToNodeLabelGfx.get(nodeKey)!;
     nodeLabelGfx.x = nodeAttributes.x;
     nodeLabelGfx.y = nodeAttributes.y;
-
-    // nodeLabelGfx -> nodeLabelText
-    const nodeLabelText = nodeLabelGfx.getChildByName(NODE_LABEL_TEXT) as PIXI.Sprite;
-    const nodeLabelTextTextureKey = [NODE_LABEL_TEXT, nodeStyle.label.fontFamily, nodeStyle.label.fontSize, nodeStyle.label.content].join(DELIMETER);
-    const nodeLabelTextTexture = this.textureCache.get(nodeLabelTextTextureKey, () => {
-      const text = textToPixi(nodeStyle.label.type, nodeStyle.label.content, {
-        fontFamily: nodeStyle.label.fontFamily,
-        fontSize: nodeStyle.label.fontSize
-      });
-      return text;
-    });
-    nodeLabelText.texture = nodeLabelTextTexture;
-    nodeLabelText.y = nodeOuterSize + (nodeLabelTextTexture.height + nodeStyle.label.padding * 2) / 2;
-    [nodeLabelText.tint, nodeLabelText.alpha] = colorToPixi(nodeStyle.label.color);
-
-    // nodeLabelGfx -> nodeLabelBackground
-    const nodeLabelBackground = nodeLabelGfx.getChildByName(NODE_LABEL_BACKGROUND) as PIXI.Sprite;
-    nodeLabelBackground.y = nodeOuterSize + (nodeLabelTextTexture.height + nodeStyle.label.padding * 2) / 2;
-    nodeLabelBackground.width = nodeLabelTextTexture.width + nodeStyle.label.padding * 2;
-    nodeLabelBackground.height = nodeLabelTextTexture.height + nodeStyle.label.padding * 2;
-    [nodeLabelBackground.tint, nodeLabelBackground.alpha] = colorToPixi(nodeStyle.label.backgroundColor);
+    updateNodeLabelStyle(nodeLabelGfx, nodeStyle, this.textureCache);
   }
 
-  private updateEdgeStyle(edgeKey: string, edgeAttributes: EdgeAttributes, sourceNodeAttributes: NodeAttributes, targetNodeAttributes: NodeAttributes) {
+  private updateEdgeStyle(edgeKey: string, edgeAttributes: EdgeAttributes, sourceNodeKey: string, targetNodeKey: string, sourceNodeAttributes: NodeAttributes, targetNodeAttributes: NodeAttributes) {
     const hover = this.hoveredEdgeKey === edgeKey;
     const edgeStyleDefinitions = [DEFAULT_STYLE.edge, this.style.edge, hover ? this.hoverStyle.edge : undefined];
-    const edgeStyle = resolveStyleDefinitions<GraphStyle['edge'], EdgeAttributes>(edgeStyleDefinitions, edgeAttributes);
-    const edgeRotation = -Math.atan2(targetNodeAttributes.x - sourceNodeAttributes.x, targetNodeAttributes.y - sourceNodeAttributes.y);
-    const edgeLength = Math.hypot(targetNodeAttributes.x - sourceNodeAttributes.x, targetNodeAttributes.y - sourceNodeAttributes.y);
+    const edgeStyle = resolveStyleDefinitions<EdgeStyle, EdgeAttributes>(edgeStyleDefinitions, edgeAttributes);
 
     // edgeGfx
     const edgeGfx = this.edgeKeyToEdgeGfx.get(edgeKey)!;
-    edgeGfx.x = sourceNodeAttributes.x;
-    edgeGfx.y = sourceNodeAttributes.y;
-    edgeGfx.rotation = edgeRotation;
-
-    // edgeGfx -> edgeLine
-    const edgeLine = edgeGfx.getChildByName(EDGE_LINE) as PIXI.Sprite;
-    edgeLine.width = edgeStyle.width;
-    edgeLine.height = edgeLength;
-    [edgeLine.tint, edgeLine.alpha] = colorToPixi(edgeStyle.color);
+    edgeGfx.x = Math.min(sourceNodeAttributes.x, targetNodeAttributes.x);
+    edgeGfx.y = Math.min(sourceNodeAttributes.y, targetNodeAttributes.y);
+    edgeGfx.width = Math.abs(targetNodeAttributes.x - sourceNodeAttributes.x);
+    edgeGfx.height = Math.abs(targetNodeAttributes.y - sourceNodeAttributes.y);
+    const sourceNodeGfx = this.nodeKeyToNodeGfx.get(sourceNodeKey)!;
+    const targetNodeGfx = this.nodeKeyToNodeGfx.get(targetNodeKey)!;
+    updateEdgeStyle(edgeGfx, edgeStyle, sourceNodeGfx, targetNodeGfx, this.textureCache);
   }
 
   private updateGraphVisibility() {
@@ -548,23 +448,15 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     this.graph.forEachNode(nodeKey => {
       const nodeGfx = this.nodeKeyToNodeGfx.get(nodeKey)!;
-      const nodeCircleBorder = nodeGfx.getChildByName(NODE_CIRCLE_BORDER) as PIXI.Sprite;
-      const nodeIcon = nodeGfx.getChildByName(NODE_ICON) as PIXI.Sprite;
-      const nodeLabelGfx = this.nodeKeyToNodeLabelGfx.get(nodeKey)!;
-      const nodeLabelBackground = nodeLabelGfx.getChildByName(NODE_LABEL_BACKGROUND) as PIXI.Sprite;
-      const nodeLabelText = nodeLabelGfx.getChildByName(NODE_LABEL_TEXT) as PIXI.BitmapText;
+      updateNodeVisibility(nodeGfx, zoomStep);
 
-      nodeCircleBorder.visible = nodeCircleBorder.visible && zoomStep >= 1;
-      nodeIcon.visible = nodeIcon.visible && zoomStep >= 2;
-      nodeLabelBackground.visible = nodeLabelBackground.visible && zoomStep >= 3;
-      nodeLabelText.visible = nodeLabelText.visible && zoomStep >= 3;
+      const nodeLabelGfx = this.nodeKeyToNodeLabelGfx.get(nodeKey)!;
+      updateNodeLabelVisibility(nodeLabelGfx, zoomStep);
     });
 
     this.graph.forEachEdge(edgeKey => {
       const edgeGfx = this.edgeKeyToEdgeGfx.get(edgeKey)!;
-      const edgeLine = edgeGfx.getChildByName(EDGE_LINE) as PIXI.Sprite;
-
-      edgeLine.visible = edgeLine.visible && zoomStep >= 1;
+      updateEdgeVisibility(edgeGfx, zoomStep);
     });
   }
 
