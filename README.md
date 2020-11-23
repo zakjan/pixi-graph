@@ -218,11 +218,17 @@ export interface GraphStyle {
   };
 }
 
-export type StyleDefinition<Style, Attributes> = ((attributes: Attributes) => Style) | {[Key in keyof Style]?: StyleDefinition<Style[Key], Attributes>} | Style;
+export type NodeStyle = GraphStyle['node'];
+export type EdgeStyle = GraphStyle['edge'];
+
+export type StyleDefinition<Style, Attributes> =
+  ((attributes: Attributes) => Style) |
+  {[Key in keyof Style]?: StyleDefinition<Style[Key], Attributes>} |
+  Style;
 
 export interface GraphStyleDefinition<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
-  node?: StyleDefinition<GraphStyle['node'], NodeAttributes>;
-  edge?: StyleDefinition<GraphStyle['edge'], EdgeAttributes>;
+  node?: StyleDefinition<NodeStyle, NodeAttributes>;
+  edge?: StyleDefinition<EdgeStyle, EdgeAttributes>;
 }
 ```
 

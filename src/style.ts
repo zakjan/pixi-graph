@@ -36,7 +36,10 @@ export interface GraphStyle {
 export type NodeStyle = GraphStyle['node'];
 export type EdgeStyle = GraphStyle['edge'];
 
-export type StyleDefinition<Style, Attributes> = ((attributes: Attributes) => Style) | {[Key in keyof Style]?: StyleDefinition<Style[Key], Attributes>} | Style;
+export type StyleDefinition<Style, Attributes> =
+  ((attributes: Attributes) => Style) |
+  {[Key in keyof Style]?: StyleDefinition<Style[Key], Attributes>} |
+  Style;
 
 export interface GraphStyleDefinition<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
   node?: StyleDefinition<NodeStyle, NodeAttributes>;
