@@ -422,10 +422,8 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // edgeGfx
     const edgeGfx = this.edgeKeyToEdgeGfx.get(edgeKey)!;
-    edgeGfx.x = Math.min(sourceNodeAttributes.x, targetNodeAttributes.x);
-    edgeGfx.y = Math.min(sourceNodeAttributes.y, targetNodeAttributes.y);
-    edgeGfx.width = Math.abs(targetNodeAttributes.x - sourceNodeAttributes.x);
-    edgeGfx.height = Math.abs(targetNodeAttributes.y - sourceNodeAttributes.y);
+    edgeGfx.x = (sourceNodeAttributes.x + targetNodeAttributes.x) / 2;
+    edgeGfx.y = (sourceNodeAttributes.y + targetNodeAttributes.y) / 2;
     const sourceNodeGfx = this.nodeKeyToNodeGfx.get(sourceNodeKey)!;
     const targetNodeGfx = this.nodeKeyToNodeGfx.get(targetNodeKey)!;
     updateEdgeStyle(edgeGfx, edgeStyle, sourceNodeGfx, targetNodeGfx, this.textureCache);

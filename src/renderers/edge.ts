@@ -8,7 +8,7 @@ export function createEdge(edgeGfx: PIXI.Container) {
   // edgeGfx -> edgeLine
   const edgeLine = new PIXI.Sprite(PIXI.Texture.WHITE);
   edgeLine.name = EDGE_LINE;
-  edgeLine.anchor.set(0.5, 0);
+  edgeLine.anchor.set(0.5);
   edgeGfx.addChild(edgeLine);
 }
 
