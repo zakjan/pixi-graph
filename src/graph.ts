@@ -318,6 +318,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.viewport.pause = false; // enable viewport dragging
 
     document.removeEventListener('mousemove', this.onDocumentMouseMoveBound);
+
+    this.mousedownNodeKey = null;
+    this.mousedownEdgeKey = null;
   }
 
   private createGraph() {
