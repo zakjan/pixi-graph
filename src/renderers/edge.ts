@@ -1,6 +1,6 @@
-import { colorToPixi } from '../color';
-import { EdgeStyle } from '../style';
-import { TextureCache } from '../textures';
+import { colorToPixi } from '../utils/color';
+import { EdgeStyle } from '../utils/style';
+import { TextureCache } from '../texture-cache';
 
 const EDGE_LINE = 'EDGE_LINE';
 
@@ -12,15 +12,10 @@ export function createEdge(edgeGfx: PIXI.Container) {
   edgeGfx.addChild(edgeLine);
 }
 
-export function updateEdgeStyle(edgeGfx: PIXI.Container, edgeStyle: EdgeStyle, sourceNodeGfx: PIXI.Container, targetNodeGfx: PIXI.Container, _textureCache: TextureCache) {
-  const rotation = -Math.atan2(targetNodeGfx.x - sourceNodeGfx.x, targetNodeGfx.y - sourceNodeGfx.y);
-  const length = Math.hypot(targetNodeGfx.x - sourceNodeGfx.x, targetNodeGfx.y - sourceNodeGfx.y);
-
+export function updateEdgeStyle(edgeGfx: PIXI.Container, edgeStyle: EdgeStyle, _textureCache: TextureCache) {
   // edgeGfx -> edgeLine
   const edgeLine = edgeGfx.getChildByName(EDGE_LINE) as PIXI.Sprite;
   edgeLine.width = edgeStyle.width;
-  edgeLine.rotation = rotation;
-  edgeLine.height = length;
   [edgeLine.tint, edgeLine.alpha] = colorToPixi(edgeStyle.color);
 }
 

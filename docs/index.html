@@ -117,6 +117,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     hoverStyle,
     resources,
   });
+  pixiGraph.on('nodeMouseover', (nodeKey) => console.log('nodeMouseover', nodeKey));
+  pixiGraph.on('nodeMouseout', (nodeKey) => console.log('nodeMouseout', nodeKey));
+  pixiGraph.on('nodeMousedown', (nodeKey) => console.log('nodeMousedown', nodeKey));
+  pixiGraph.on('nodeMouseup', (nodeKey) => console.log('nodeMouseup', nodeKey));
+  pixiGraph.on('nodeClick', (nodeKey) => console.log('nodeClick', nodeKey));
+  pixiGraph.on('edgeMouseover', (edgeKey) => console.log('edgeMouseover', edgeKey));
+  pixiGraph.on('edgeMouseout', (edgeKey) => console.log('edgeMouseout', edgeKey));
+  pixiGraph.on('edgeMousedown', (edgeKey) => console.log('edgeMousedown', edgeKey));
+  pixiGraph.on('edgeMouseup', (edgeKey) => console.log('edgeMouseup', edgeKey));
+  pixiGraph.on('edgeClick', (edgeKey) => console.log('edgeClick', edgeKey));
 });
 </script>
 

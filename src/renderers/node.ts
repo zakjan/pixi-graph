@@ -1,7 +1,7 @@
-import { colorToPixi } from '../color';
-import { NodeStyle } from '../style';
-import { textToPixi } from '../text';
-import { TextureCache } from '../textures';
+import { colorToPixi } from '../utils/color';
+import { NodeStyle } from '../utils/style';
+import { textToPixi } from '../utils/text';
+import { TextureCache } from '../texture-cache';
 
 const DELIMETER = '::';
 const WHITE = 0xffffff;

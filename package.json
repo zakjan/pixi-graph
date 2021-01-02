@@ -23,6 +23,7 @@
     "@pixi-essentials/cull": "^1.0.9",
     "color-rgba": "^2.2.3",
     "deepmerge": "^4.2.2",
+    "events": "^3.2.0",
     "pixi-viewport": "^4.15.0"
   },
   "peerDependencies": {

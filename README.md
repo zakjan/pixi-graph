@@ -262,3 +262,29 @@ const style = {
   },
 };
 ```
+
+### Events
+
+Node events:
+
+- nodeMouseover
+- nodeMouseout
+- nodeMousedown
+- nodeMouseup
+- nodeClick
+
+```ts
+pixiGraph.on('nodeClick', (nodeKey) => ...);
+```
+
+Edge events:
+
+- edgeMouseover
+- edgeMouseout
+- edgeMousedown
+- edgeMouseup
+- edgeClick
+
+```ts
+pixiGraph.on('edgeClick', (nodeKey) => ...);
+```
