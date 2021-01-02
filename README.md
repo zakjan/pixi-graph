@@ -286,5 +286,5 @@ Edge events:
 - edgeClick
 
 ```ts
-pixiGraph.on('edgeClick', (nodeKey) => ...);
+pixiGraph.on('edgeClick', (edgeKey) => ...);
 ```
