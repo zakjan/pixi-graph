@@ -25,7 +25,7 @@ or
 ```html
 <script src="https://unpkg.com/graphology@0.18.0/dist/graphology.umd.js"></script>
 <script src="https://unpkg.com/pixi.js@5.3.3/dist/pixi.min.js"></script>
-<script src="https://unpkg.com/pixi-graph@1.1.1/dist/pixi-graph.umd.min.js"></script>
+<script src="https://unpkg.com/pixi-graph@1.1.2/dist/pixi-graph.umd.min.js"></script>
 ```
 
 ## Usage
