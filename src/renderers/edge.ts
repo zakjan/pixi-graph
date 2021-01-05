@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import { colorToPixi } from '../utils/color';
 import { EdgeStyle } from '../utils/style';
 import { TextureCache } from '../texture-cache';

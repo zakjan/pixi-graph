@@ -1,5 +1,7 @@
 # Changelog
 
+- add missing PIXI imports
+
 ## 1.1.1
 
 - fix hovering after click

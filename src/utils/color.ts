@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import rgba from 'color-rgba';
 
 export function colorToPixi(color: string) {

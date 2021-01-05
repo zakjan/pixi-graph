@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import { colorToPixi } from '../utils/color';
 import { NodeStyle } from '../utils/style';
 import { textToPixi } from '../utils/text';
