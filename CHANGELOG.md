@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.1.3
+
 - fix moving nodes to use container coordinates
 
 ## 1.1.2
