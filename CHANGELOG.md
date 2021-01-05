@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.1.4
+
 - pass original event to event handlers
 
 ## 1.1.3
