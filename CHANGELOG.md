@@ -1,5 +1,9 @@
 # Changelog
 
+- fix moving nodes to use container coordinates
+
+## 1.1.2
+
 - add missing PIXI imports
 
 ## 1.1.1

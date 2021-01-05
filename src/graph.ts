@@ -306,7 +306,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private onDocumentMouseMove(event: MouseEvent) {
-    const eventPosition = new PIXI.Point(event.clientX, event.clientY);
+    const eventPosition = new PIXI.Point(event.offsetX, event.offsetY);
     const worldPosition = this.viewport.toWorld(eventPosition);
 
     if (this.mousedownNodeKey) {
