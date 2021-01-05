@@ -1,5 +1,7 @@
 # Changelog
 
+- pass original event to event handlers
+
 ## 1.1.3
 
 - fix moving nodes to use container coordinates

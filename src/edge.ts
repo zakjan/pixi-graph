@@ -21,11 +21,10 @@ export class PixiEdge extends EventEmitter {
     const edgeGfx = new PIXI.Container();
     edgeGfx.interactive = true;
     edgeGfx.buttonMode = true;
-    edgeGfx.on('mouseover', () => this.emit('mouseover'));
-    edgeGfx.on('mouseout', () => this.emit('mouseout'));
-    edgeGfx.on('mousedown', () => this.emit('mousedown'));
-    edgeGfx.on('mouseup', () => this.emit('mouseup'));
-    edgeGfx.on('mouseupoutside', () => this.emit('mouseupoutside'));
+    edgeGfx.on('mouseover', (event: PIXI.InteractionEvent) => this.emit('mouseover', event.data.originalEvent));
+    edgeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent));
+    edgeGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent));
+    edgeGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent));
     createEdge(edgeGfx);
     return edgeGfx;
   }

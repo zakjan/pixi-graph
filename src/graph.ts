@@ -335,28 +335,28 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
   private createNode(nodeKey: string) {
     const node = new PixiNode();
-    node.on('mouseover', () => {
+    node.on('mouseover', (event: MouseEvent) => {
       if (!this.mousedownNodeKey) {
         this.hoverNode(nodeKey);
       }
-      this.emit('nodeMouseover', nodeKey);
+      this.emit('nodeMouseover', event, nodeKey);
     });
-    node.on('mouseout', () => {
+    node.on('mouseout', (event: MouseEvent) => {
       if (!this.mousedownNodeKey) {
         this.unhoverNode(nodeKey);
       }
-      this.emit('nodeMouseout', nodeKey);
+      this.emit('nodeMouseout', event, nodeKey);
     });
-    node.on('mousedown', () => {
+    node.on('mousedown', (event: MouseEvent) => {
       this.mousedownNodeKey = nodeKey;
       this.enableNodeDragging();
-      this.emit('nodeMousedown', nodeKey);
+      this.emit('nodeMousedown', event, nodeKey);
     });
-    node.on('mouseup', () => {
-      this.emit('nodeMouseup', nodeKey);
+    node.on('mouseup', (event: MouseEvent) => {
+      this.emit('nodeMouseup', event, nodeKey);
       // why native click event doesn't work?
       if (this.mousedownNodeKey === nodeKey) {
-        this.emit('nodeClick', nodeKey);
+        this.emit('nodeClick', event, nodeKey);
       }
     });
     this.nodeLayer.addChild(node.nodeGfx);
@@ -368,23 +368,23 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
   private createEdge(edgeKey: string) {
     const edge = new PixiEdge();
-    edge.on('mouseover', () => {
+    edge.on('mouseover', (event: MouseEvent) => {
       this.hoverEdge(edgeKey);
-      this.emit('edgeMouseover', edgeKey);
+      this.emit('edgeMouseover', event, edgeKey);
     });
-    edge.on('mouseout', () => {
+    edge.on('mouseout', (event: MouseEvent) => {
       this.unhoverEdge(edgeKey);
-      this.emit('edgeMouseout', edgeKey);
+      this.emit('edgeMouseout', event, edgeKey);
     });
-    edge.on('mousedown', () => {
+    edge.on('mousedown', (event: MouseEvent) => {
       this.mousedownEdgeKey = edgeKey;
-      this.emit('edgeMousedown', edgeKey);
+      this.emit('edgeMousedown', event, edgeKey);
     });
-    edge.on('mouseup', () => {
-      this.emit('edgeMouseup', edgeKey);
+    edge.on('mouseup', (event: MouseEvent) => {
+      this.emit('edgeMouseup', event, edgeKey);
       // why native click event doesn't work?
       if (this.mousedownEdgeKey === edgeKey) {
-        this.emit('edgeClick', edgeKey);
+        this.emit('edgeClick', event, edgeKey);
       }
     });
     this.edgeLayer.addChild(edge.edgeGfx);

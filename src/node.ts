@@ -26,11 +26,10 @@ export class PixiNode extends EventEmitter {
     const nodeGfx = new PIXI.Container();
     nodeGfx.interactive = true;
     nodeGfx.buttonMode = true;
-    nodeGfx.on('mouseover', () => this.emit('mouseover'));
-    nodeGfx.on('mouseout', () => this.emit('mouseout'));
-    nodeGfx.on('mousedown', () => this.emit('mousedown'));
-    nodeGfx.on('mouseup', () => this.emit('mouseup'));
-    nodeGfx.on('mouseupoutside', () => this.emit('mouseupoutside'));
+    nodeGfx.on('mouseover', (event: PIXI.InteractionEvent) => this.emit('mouseover', event.data.originalEvent));
+    nodeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent));
+    nodeGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent));
+    nodeGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent));
     createNode(nodeGfx);
     return nodeGfx;
   }
@@ -39,11 +38,10 @@ export class PixiNode extends EventEmitter {
     const nodeLabelGfx = new PIXI.Container();
     nodeLabelGfx.interactive = true;
     nodeLabelGfx.buttonMode = true;
-    nodeLabelGfx.on('mouseover', () => this.emit('mouseover'));
-    nodeLabelGfx.on('mouseout', () => this.emit('mouseout'));
-    nodeLabelGfx.on('mousedown', () => this.emit('mousedown'));
-    nodeLabelGfx.on('mouseup', () => this.emit('mouseup'));
-    nodeLabelGfx.on('mouseupoutside', () => this.emit('mouseupoutside'));
+    nodeLabelGfx.on('mouseover', (event: PIXI.InteractionEvent) => this.emit('mouseover', event.data.originalEvent));
+    nodeLabelGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent));
+    nodeLabelGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent));
+    nodeLabelGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent));
     createNodeLabel(nodeLabelGfx);
     return nodeLabelGfx;
   }

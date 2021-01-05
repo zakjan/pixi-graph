@@ -274,7 +274,7 @@ Node events:
 - nodeClick
 
 ```ts
-pixiGraph.on('nodeClick', (nodeKey) => ...);
+pixiGraph.on('nodeClick', (event, nodeKey) => ...);
 ```
 
 Edge events:
@@ -286,5 +286,5 @@ Edge events:
 - edgeClick
 
 ```ts
-pixiGraph.on('edgeClick', (edgeKey) => ...);
+pixiGraph.on('edgeClick', (event, edgeKey) => ...);
 ```
