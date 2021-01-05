@@ -288,3 +288,7 @@ Edge events:
 ```ts
 pixiGraph.on('edgeClick', (event, edgeKey) => ...);
 ```
+
+## Sponsors
+
+<a href="https://reflect.app/"><img src="https://reflect.app/static/icons/icon-bare.svg" alt="Reflect" width="48" height="48"></a>
