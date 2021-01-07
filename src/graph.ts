@@ -72,24 +72,24 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   hoverStyle: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
   resources?: ResourceLoader.IAddOptions[];
 
-  app: PIXI.Application;
-  textureCache: TextureCache;
-  viewport: Viewport;
-  resizeObserver: ResizeObserver;
-  edgeLayer: PIXI.Container;
-  frontEdgeLayer: PIXI.Container;
-  nodeLayer: PIXI.Container;
-  nodeLabelLayer: PIXI.Container;
-  frontNodeLayer: PIXI.Container;
-  frontNodeLabelLayer: PIXI.Container;
-  nodeKeyToNodeObject = new Map<string, PixiNode>();
-  edgeKeyToEdgeObject = new Map<string, PixiEdge>();
+  private app: PIXI.Application;
+  private textureCache: TextureCache;
+  private viewport: Viewport;
+  private resizeObserver: ResizeObserver;
+  private edgeLayer: PIXI.Container;
+  private frontEdgeLayer: PIXI.Container;
+  private nodeLayer: PIXI.Container;
+  private nodeLabelLayer: PIXI.Container;
+  private frontNodeLayer: PIXI.Container;
+  private frontNodeLabelLayer: PIXI.Container;
+  private nodeKeyToNodeObject = new Map<string, PixiNode>();
+  private edgeKeyToEdgeObject = new Map<string, PixiEdge>();
 
-  mousedownNodeKey: string | null = null;
-  mousedownEdgeKey: string | null = null;
+  private mousedownNodeKey: string | null = null;
+  private mousedownEdgeKey: string | null = null;
 
-  onDocumentMouseMoveBound = this.onDocumentMouseMove.bind(this);
-  onDocumentMouseUpBound = this.onDocumentMouseUp.bind(this);
+  private onDocumentMouseMoveBound = this.onDocumentMouseMove.bind(this);
+  private onDocumentMouseUpBound = this.onDocumentMouseUp.bind(this);
 
   constructor(options: GraphOptions<NodeAttributes, EdgeAttributes>) {
     super();
