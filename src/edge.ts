@@ -25,6 +25,7 @@ export class PixiEdge extends EventEmitter {
     edgeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent));
     edgeGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent));
     edgeGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent));
+    edgeGfx.on('mousemove', (event: PIXI.InteractionEvent) => this.emit('mousemove', event.data.originalEvent));
     createEdge(edgeGfx);
     return edgeGfx;
   }

@@ -119,6 +119,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     });
     this.container.appendChild(this.app.view);
 
+    this.app.renderer.plugins.interaction.moveWhenInside = true;
     this.app.view.addEventListener('wheel', event => { event.preventDefault() });
 
     this.textureCache = new TextureCache(this.app);
@@ -335,6 +336,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
   private createNode(nodeKey: string) {
     const node = new PixiNode();
+    node.on('mousemove', (event: MouseEvent) => {
+      this.emit('nodeMousemove', event, nodeKey);
+    });
     node.on('mouseover', (event: MouseEvent) => {
       if (!this.mousedownNodeKey) {
         this.hoverNode(nodeKey);
@@ -368,6 +372,9 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
   private createEdge(edgeKey: string) {
     const edge = new PixiEdge();
+    edge.on('mousemove', (event: MouseEvent) => {
+      this.emit('edgeMousemove', event, edgeKey);
+    });
     edge.on('mouseover', (event: MouseEvent) => {
       this.hoverEdge(edgeKey);
       this.emit('edgeMouseover', event, edgeKey);

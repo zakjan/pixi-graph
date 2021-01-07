@@ -1,5 +1,7 @@
 # Changelog
 
+- add mousemove events
+
 ## 1.1.4
 
 - pass original event to event handlers

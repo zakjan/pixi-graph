@@ -117,16 +117,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     hoverStyle,
     resources,
   });
+  pixiGraph.on('nodeClick', (event, nodeKey) => console.log('nodeClick', event, nodeKey));
+  pixiGraph.on('nodeMousemove', (event, nodeKey) => console.log('nodeMousemove', event, nodeKey));
   pixiGraph.on('nodeMouseover', (event, nodeKey) => console.log('nodeMouseover', event, nodeKey));
   pixiGraph.on('nodeMouseout', (event, nodeKey) => console.log('nodeMouseout', event, nodeKey));
   pixiGraph.on('nodeMousedown', (event, nodeKey) => console.log('nodeMousedown', event, nodeKey));
   pixiGraph.on('nodeMouseup', (event, nodeKey) => console.log('nodeMouseup', event, nodeKey));
-  pixiGraph.on('nodeClick', (event, nodeKey) => console.log('nodeClick', event, nodeKey));
+  pixiGraph.on('edgeClick', (event, edgeKey) => console.log('edgeClick', event, edgeKey));
+  pixiGraph.on('edgeMousemove', (event, edgeKey) => console.log('edgeMousemove', event, edgeKey));
   pixiGraph.on('edgeMouseover', (event, edgeKey) => console.log('edgeMouseover', event, edgeKey));
   pixiGraph.on('edgeMouseout', (event, edgeKey) => console.log('edgeMouseout', event, edgeKey));
   pixiGraph.on('edgeMousedown', (event, edgeKey) => console.log('edgeMousedown', event, edgeKey));
   pixiGraph.on('edgeMouseup', (event, edgeKey) => console.log('edgeMouseup', event, edgeKey));
-  pixiGraph.on('edgeClick', (event, edgeKey) => console.log('edgeClick', event, edgeKey));
 });
 </script>
 

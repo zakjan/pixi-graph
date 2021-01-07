@@ -267,11 +267,12 @@ const style = {
 
 Node events:
 
+- nodeClick
+- nodeMousemove
 - nodeMouseover
 - nodeMouseout
 - nodeMousedown
 - nodeMouseup
-- nodeClick
 
 ```ts
 pixiGraph.on('nodeClick', (event, nodeKey) => ...);
@@ -279,11 +280,12 @@ pixiGraph.on('nodeClick', (event, nodeKey) => ...);
 
 Edge events:
 
+- edgeClick
+- edgeMousemove
 - edgeMouseover
 - edgeMouseout
 - edgeMousedown
 - edgeMouseup
-- edgeClick
 
 ```ts
 pixiGraph.on('edgeClick', (event, edgeKey) => ...);
