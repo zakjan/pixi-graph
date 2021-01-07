@@ -6,7 +6,6 @@ import { NodeStyle } from './utils/style';
 import { TextureCache } from './texture-cache';
 
 interface PixiNodeEvents {
-  click: (event: MouseEvent) => void;
   mousemove: (event: MouseEvent) => void;
   mouseover: (event: MouseEvent) => void;
   mouseout: (event: MouseEvent) => void;
