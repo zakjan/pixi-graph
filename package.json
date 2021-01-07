@@ -24,7 +24,8 @@
     "color-rgba": "^2.2.3",
     "deepmerge": "^4.2.2",
     "events": "^3.2.0",
-    "pixi-viewport": "^4.15.0"
+    "pixi-viewport": "^4.15.0",
+    "tiny-typed-emitter": "^2.0.3"
   },
   "peerDependencies": {
     "pixi.js": "^5.3.3",

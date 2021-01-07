@@ -1,10 +1,19 @@
 import * as PIXI from 'pixi.js';
-import { EventEmitter } from 'events';
+import { TypedEmitter } from 'tiny-typed-emitter';
 import { createEdge, updateEdgeStyle, updateEdgeVisibility } from './renderers/edge';
 import { EdgeStyle } from './utils/style';
 import { TextureCache } from './texture-cache';
 
-export class PixiEdge extends EventEmitter {
+interface PixiEdgeEvents {
+  click: (event: MouseEvent) => void;
+  mousemove: (event: MouseEvent) => void;
+  mouseover: (event: MouseEvent) => void;
+  mouseout: (event: MouseEvent) => void;
+  mousedown: (event: MouseEvent) => void;
+  mouseup: (event: MouseEvent) => void;
+}
+
+export class PixiEdge extends TypedEmitter<PixiEdgeEvents> {
   edgeGfx: PIXI.Container;
   edgePlaceholderGfx: PIXI.Container;
 
@@ -21,11 +30,11 @@ export class PixiEdge extends EventEmitter {
     const edgeGfx = new PIXI.Container();
     edgeGfx.interactive = true;
     edgeGfx.buttonMode = true;
-    edgeGfx.on('mouseover', (event: PIXI.InteractionEvent) => this.emit('mouseover', event.data.originalEvent));
-    edgeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent));
-    edgeGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent));
-    edgeGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent));
-    edgeGfx.on('mousemove', (event: PIXI.InteractionEvent) => this.emit('mousemove', event.data.originalEvent));
+    edgeGfx.on('mouseover', (event: PIXI.InteractionEvent) => this.emit('mouseover', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mousemove', (event: PIXI.InteractionEvent) => this.emit('mousemove', event.data.originalEvent as MouseEvent));
     createEdge(edgeGfx);
     return edgeGfx;
   }

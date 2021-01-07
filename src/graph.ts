@@ -3,7 +3,7 @@ import { Viewport } from 'pixi-viewport';
 import { Cull } from '@pixi-essentials/cull';
 import * as Graphology from 'graphology-types';
 import * as ResourceLoader from 'resource-loader';
-import { EventEmitter } from 'events';
+import { TypedEmitter } from 'tiny-typed-emitter';
 import { GraphStyleDefinition, NodeStyle, EdgeStyle, resolveStyleDefinitions } from './utils/style';
 import { TextType } from './utils/text';
 import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
@@ -50,7 +50,22 @@ export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNo
   resources?: ResourceLoader.IAddOptions[];
 }
 
-export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> extends EventEmitter {
+interface PixiGraphEvents {
+  nodeClick: (event: MouseEvent, nodeKey: string) => void;
+  nodeMousemove: (event: MouseEvent, nodeKey: string) => void;
+  nodeMouseover: (event: MouseEvent, nodeKey: string) => void;
+  nodeMouseout: (event: MouseEvent, nodeKey: string) => void;
+  nodeMousedown: (event: MouseEvent, nodeKey: string) => void;
+  nodeMouseup: (event: MouseEvent, nodeKey: string) => void;
+  edgeClick: (event: MouseEvent, edgeKey: string) => void;
+  edgeMousemove: (event: MouseEvent, edgeKey: string) => void;
+  edgeMouseover: (event: MouseEvent, edgeKey: string) => void;
+  edgeMouseout: (event: MouseEvent, edgeKey: string) => void;
+  edgeMousedown: (event: MouseEvent, edgeKey: string) => void;
+  edgeMouseup: (event: MouseEvent, edgeKey: string) => void;
+}
+
+export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> extends TypedEmitter<PixiGraphEvents> {
   container: HTMLElement;
   graph: Graphology.AbstractGraph<NodeAttributes, EdgeAttributes>;
   style: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;

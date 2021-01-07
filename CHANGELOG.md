@@ -1,5 +1,6 @@
 # Changelog
 
+- use tiny-typed-emitter for typed events
 - add mousemove events
 
 ## 1.1.4
