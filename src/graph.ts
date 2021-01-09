@@ -114,26 +114,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       throw new Error('container should be a HTMLElement');
     }
 
-    // normalize node positions
-    const nodesAttributes = this.graph.nodes().map(nodeKey => this.graph.getNodeAttributes(nodeKey));
-    const nodesX = nodesAttributes.map(nodeAttributes => nodeAttributes.x);
-    const nodesY = nodesAttributes.map(nodeAttributes => nodeAttributes.y);
-    const minNodeX = Math.min(...nodesX);
-    const maxNodeX = Math.max(...nodesX);
-    const minNodeY = Math.min(...nodesY);
-    const maxNodeY = Math.max(...nodesY);
-    const graphWidth = Math.abs(maxNodeX - minNodeX);
-    const graphHeight = Math.abs(maxNodeY - minNodeY);
-    const worldWidth = Math.max(this.container.clientWidth * 2, graphWidth * 1.1);
-    const worldHeight = Math.max(this.container.clientHeight * 2, graphHeight * 1.1);
-    // const worldWidth = this.container.clientWidth;
-    // const worldHeight = this.container.clientHeight;
-    // console.log(this.container.clientWidth, this.container.clientHeight, graphWidth, graphHeight, worldWidth, worldHeight);
-    this.graph.forEachNode((nodeKey, nodeAttributes) => {
-      this.graph.setNodeAttribute(nodeKey, 'x', nodeAttributes.x - minNodeX - graphWidth / 2 + worldWidth / 2);
-      this.graph.setNodeAttribute(nodeKey, 'y', nodeAttributes.y - minNodeY - graphHeight / 2 + worldHeight / 2);
-    });
-
     // create PIXI application
     this.app = new PIXI.Application({
       resizeTo: this.container,
@@ -153,8 +133,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.viewport = new Viewport({
       screenWidth: this.container.clientWidth,
       screenHeight: this.container.clientHeight,
-      worldWidth: worldWidth,
-      worldHeight: worldHeight,
       interaction: this.app.renderer.plugins.interaction
     })
       .drag()
@@ -180,7 +158,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     this.resizeObserver = new ResizeObserver(() => {
       this.app.resize();
-      this.viewport.resize(this.container.clientWidth, this.container.clientHeight, worldWidth, worldHeight);
+      this.viewport.resize(this.container.clientWidth, this.container.clientHeight);
       this.updateGraphVisibility();
     });
 
@@ -198,10 +176,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
       this.resizeObserver.observe(this.container);
 
-      // initial draw
-      this.createGraph();
-      this.resetView();
-
       // listen to graph changes
       this.graph.on('nodeAdded', this.onGraphNodeAddedBound);
       this.graph.on('edgeAdded', this.onGraphEdgeAddedBound);
@@ -213,6 +187,10 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       this.graph.on('edgeAttributesUpdated', this.onGraphEdgeAttributesUpdatedBound);
       this.graph.on('eachNodeAttributesUpdated', this.onGraphEachNodeAttributesUpdatedBound);
       this.graph.on('eachEdgeAttributesUpdated', this.onGraphEachEdgeAttributesUpdatedBound);
+
+      // initial draw
+      this.createGraph();
+      this.resetView();
     });
   }
 
@@ -238,24 +216,41 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.app = undefined!;
   }
 
+  private get zoomStep() {
+    return Math.min(this.viewport.worldWidth, this.viewport.worldHeight) / 10;
+  }
+
   zoomIn() {
-    this.viewport.zoom(-this.viewport.worldWidth / 10, true);
+    this.viewport.zoom(-this.zoomStep, true);
   }
 
   zoomOut() {
-    this.viewport.zoom(this.viewport.worldWidth / 10, true);
+    this.viewport.zoom(this.zoomStep, true);
   }
 
   resetView() {
-    this.viewport.center = new PIXI.Point(this.viewport.worldWidth / 2, this.viewport.worldHeight / 2);
-    this.viewport.fitWorld(true);
+    const nodesX = this.graph.nodes().map(nodeKey => this.graph.getNodeAttribute(nodeKey, 'x'));
+    const nodesY = this.graph.nodes().map(nodeKey => this.graph.getNodeAttribute(nodeKey, 'y'));
+    const minX = Math.min(...nodesX);
+    const maxX = Math.max(...nodesX);
+    const minY = Math.min(...nodesY);
+    const maxY = Math.max(...nodesY);
+    const width = Math.abs(maxX - minX);
+    const height = Math.abs(maxY - minY);
+    const center = new PIXI.Point(minX + width / 2, minY + height / 2);
+
+    const padding = 100;
+    const totalWidth = width + padding * 2;
+    const totalHeight = height + padding * 2;
+    
+    this.viewport.center = center;
+    this.viewport.fit(true, totalWidth, totalHeight);
   }
 
   private onGraphNodeAdded(data: { key: string, attributes: NodeAttributes }) {
     const nodeKey = data.key;
     const nodeAttributes = data.attributes;
     this.createNode(nodeKey, nodeAttributes);
-    // TODO: normalize position?
   }
 
   private onGraphEdgeAdded(data: { key: string, attributes: EdgeAttributes, source: string, target: string }) {
