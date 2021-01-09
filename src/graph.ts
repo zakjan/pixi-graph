@@ -88,6 +88,16 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private mousedownNodeKey: string | null = null;
   private mousedownEdgeKey: string | null = null;
 
+  private onGraphNodeAddedBound = this.onGraphNodeAdded.bind(this);
+  private onGraphEdgeAddedBound = this.onGraphEdgeAdded.bind(this);
+  private onGraphNodeDroppedBound = this.onGraphNodeDropped.bind(this);
+  private onGraphEdgeDroppedBound = this.onGraphEdgeDropped.bind(this);
+  private onGraphClearedBound = this.onGraphCleared.bind(this);
+  private onGraphEdgesClearedBound = this.onGraphEdgesCleared.bind(this);
+  private onGraphNodeAttributesUpdatedBound = this.onGraphNodeAttributesUpdated.bind(this);
+  private onGraphEdgeAttributesUpdatedBound = this.onGraphEdgeAttributesUpdated.bind(this);
+  private onGraphEachNodeAttributesUpdatedBound = this.onGraphEachNodeAttributesUpdated.bind(this);
+  private onGraphEachEdgeAttributesUpdatedBound = this.onGraphEachEdgeAttributesUpdated.bind(this);
   private onDocumentMouseMoveBound = this.onDocumentMouseMove.bind(this);
   private onDocumentMouseUpBound = this.onDocumentMouseUp.bind(this);
 
@@ -179,11 +189,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       this.app.loader.add(this.resources);
     }
     this.app.loader.load(() => {
-      // initial draw
-      this.createGraph();
-      this.updateGraphStyle();
-      this.resetViewport();
-
       this.viewport.on('frame-end', () => {
         if (this.viewport.dirty) {
           this.updateGraphVisibility();
@@ -192,7 +197,45 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       });
 
       this.resizeObserver.observe(this.container);
+
+      // initial draw
+      this.createGraph();
+      this.resetView();
+
+      // listen to graph changes
+      this.graph.on('nodeAdded', this.onGraphNodeAddedBound);
+      this.graph.on('edgeAdded', this.onGraphEdgeAddedBound);
+      this.graph.on('nodeDropped', this.onGraphNodeDroppedBound);
+      this.graph.on('edgeDropped', this.onGraphEdgeDroppedBound);
+      this.graph.on('cleared', this.onGraphClearedBound);
+      this.graph.on('edgesCleared', this.onGraphEdgesClearedBound);
+      this.graph.on('nodeAttributesUpdated', this.onGraphNodeAttributesUpdatedBound);
+      this.graph.on('edgeAttributesUpdated', this.onGraphEdgeAttributesUpdatedBound);
+      this.graph.on('eachNodeAttributesUpdated', this.onGraphEachNodeAttributesUpdatedBound);
+      this.graph.on('eachEdgeAttributesUpdated', this.onGraphEachEdgeAttributesUpdatedBound);
     });
+  }
+
+  destroy() {
+    this.graph.off('nodeAdded', this.onGraphNodeAddedBound);
+    this.graph.off('edgeAdded', this.onGraphEdgeAddedBound);
+    this.graph.off('nodeDropped', this.onGraphNodeDroppedBound);
+    this.graph.off('edgeDropped', this.onGraphEdgeDroppedBound);
+    this.graph.off('cleared', this.onGraphClearedBound);
+    this.graph.off('edgesCleared', this.onGraphEdgesClearedBound);
+    this.graph.off('nodeAttributesUpdated', this.onGraphNodeAttributesUpdatedBound);
+    this.graph.off('edgeAttributesUpdated', this.onGraphEdgeAttributesUpdatedBound);
+    this.graph.off('eachNodeAttributesUpdated', this.onGraphEachNodeAttributesUpdatedBound);
+    this.graph.off('eachEdgeAttributesUpdated', this.onGraphEachEdgeAttributesUpdatedBound);
+
+    this.resizeObserver.disconnect();
+    this.resizeObserver = undefined!;
+
+    this.textureCache.destroy();
+    this.textureCache = undefined!;
+
+    this.app.destroy(true, { children: true, texture: true, baseTexture: true });
+    this.app = undefined!;
   }
 
   zoomIn() {
@@ -203,9 +246,64 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.viewport.zoom(this.viewport.worldWidth / 10, true);
   }
 
-  resetViewport() {
+  resetView() {
     this.viewport.center = new PIXI.Point(this.viewport.worldWidth / 2, this.viewport.worldHeight / 2);
     this.viewport.fitWorld(true);
+  }
+
+  private onGraphNodeAdded(data: { key: string, attributes: NodeAttributes }) {
+    const nodeKey = data.key;
+    const nodeAttributes = data.attributes;
+    this.createNode(nodeKey, nodeAttributes);
+    // TODO: normalize position?
+  }
+
+  private onGraphEdgeAdded(data: { key: string, attributes: EdgeAttributes, source: string, target: string }) {
+    const edgeKey = data.key;
+    const edgeAttributes = data.attributes;
+    const sourceNodeKey = data.source;
+    const targetNodeKey = data.target;
+    const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
+    const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
+    this.createEdge(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
+  }
+
+  private onGraphNodeDropped(data: { key: string }) {
+    const nodeKey = data.key;
+    this.dropNode(nodeKey);
+  }
+
+  private onGraphEdgeDropped(data: { key: string }) {
+    const edgeKey = data.key;
+    this.dropEdge(edgeKey);
+  }
+
+  private onGraphCleared() {
+    Array.from(this.edgeKeyToEdgeObject.keys()).forEach(this.dropEdge.bind(this));
+    Array.from(this.nodeKeyToNodeObject.keys()).forEach(this.dropNode.bind(this));
+  }
+
+  private onGraphEdgesCleared() {
+    Array.from(this.edgeKeyToEdgeObject.keys()).forEach(this.dropEdge.bind(this));
+  }
+
+  private onGraphNodeAttributesUpdated(data: { key: string }) {
+    const nodeKey = data.key;
+    this.updateNodeStyleByKey(nodeKey);
+    // TODO: normalize position?
+  }
+
+  private onGraphEdgeAttributesUpdated(data: { key: string }) {
+    const edgeKey = data.key;
+    this.updateEdgeStyleByKey(edgeKey);
+  }
+
+  private onGraphEachNodeAttributesUpdated() {
+    this.graph.forEachNode(this.updateNodeStyle.bind(this));
+  }
+
+  private onGraphEachEdgeAttributesUpdated() {
+    this.graph.forEachEdge(this.updateEdgeStyle.bind(this));
   }
 
   private hoverNode(nodeKey: string) {
@@ -327,7 +425,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.graph.forEachEdge(this.createEdge.bind(this));
   }
 
-  private createNode(nodeKey: string) {
+  private createNode(nodeKey: string, nodeAttributes: NodeAttributes) {
     const node = new PixiNode();
     node.on('mousemove', (event: MouseEvent) => {
       this.emit('nodeMousemove', event, nodeKey);
@@ -361,9 +459,11 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.frontNodeLayer.addChild(node.nodePlaceholderGfx);
     this.frontNodeLabelLayer.addChild(node.nodeLabelPlaceholderGfx);
     this.nodeKeyToNodeObject.set(nodeKey, node);
+
+    this.updateNodeStyle(nodeKey, nodeAttributes);
   }
 
-  private createEdge(edgeKey: string) {
+  private createEdge(edgeKey: string, edgeAttributes: EdgeAttributes, sourceNodeKey: string, targetNodeKey: string, sourceNodeAttributes: NodeAttributes, targetNodeAttributes: NodeAttributes) {
     const edge = new PixiEdge();
     edge.on('mousemove', (event: MouseEvent) => {
       this.emit('edgeMousemove', event, edgeKey);
@@ -390,11 +490,26 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.edgeLayer.addChild(edge.edgeGfx);
     this.frontEdgeLayer.addChild(edge.edgePlaceholderGfx);
     this.edgeKeyToEdgeObject.set(edgeKey, edge);
+
+    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
   }
 
-  private updateGraphStyle() {
-    this.graph.forEachNode(this.updateNodeStyle.bind(this));
-    this.graph.forEachEdge(this.updateEdgeStyle.bind(this));
+  private dropNode(nodeKey: string) {
+    const node = this.nodeKeyToNodeObject.get(nodeKey)!;
+    
+    this.nodeLayer.removeChild(node.nodeGfx);
+    this.nodeLabelLayer.removeChild(node.nodeLabelGfx);
+    this.frontNodeLayer.removeChild(node.nodePlaceholderGfx);
+    this.frontNodeLabelLayer.removeChild(node.nodeLabelPlaceholderGfx);
+    this.nodeKeyToNodeObject.delete(nodeKey);
+  }
+
+  private dropEdge(edgeKey: string) {
+    const edge = this.edgeKeyToEdgeObject.get(edgeKey)!;
+    
+    this.edgeLayer.removeChild(edge.edgeGfx);
+    this.frontEdgeLayer.removeChild(edge.edgePlaceholderGfx);
+    this.edgeKeyToEdgeObject.delete(edgeKey);
   }
 
   private updateNodeStyleByKey(nodeKey: string) {
@@ -460,16 +575,5 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       const edge = this.edgeKeyToEdgeObject.get(edgeKey)!;
       edge.updateVisibility(zoomStep);
     });
-  }
-
-  destroy() {
-    this.resizeObserver.disconnect();
-    this.resizeObserver = undefined!;
-
-    this.textureCache.destroy();
-    this.textureCache = undefined!;
-
-    this.app.destroy(true, { children: true, texture: true, baseTexture: true });
-    this.app = undefined!;
   }
 }

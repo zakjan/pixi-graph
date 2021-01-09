@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>pixi-graph</title>
-  <script src="https://unpkg.com/graphology@0.18.0/dist/graphology.umd.js"></script>
+  <script src="https://unpkg.com/graphology@0.19.2/dist/graphology.umd.js"></script>
   <script src="https://unpkg.com/graphology-layout-forceatlas2@0.4.4/build/graphology-layout-forceatlas2.js"></script>
   <script src="https://unpkg.com/fontfaceobserver@2.1.0/fontfaceobserver.standalone.js"></script>
   <script src="https://unpkg.com/pixi.js@5.3.3/dist/pixi.min.js"></script>
@@ -18,10 +18,31 @@
       width: 100vw;
       height: 100vh;
     }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
   </style>
 </head>
 <body>
   <div id="graph"></div>
+  <div id="controls">
+    <button id="add-node">Add Node</button>
+    <button id="add-edge">Add Edge</button>
+    <button id="drop-node">Drop Node</button>
+    <button id="drop-edge">Drop Edge</button>
+    <button id="clear">Clear</button>
+    <button id="clear-edges">Clear Edges</button>
+    <button id="update-node">Update Node</button>
+    <button id="update-edge">Update Edge</button>
+    <button id="update-nodes">Update Nodes</button>
+    <button id="update-edges">Update Edges</button>
+    <div style="height: 10px"></div>
+    <button id="zoom-in">Zoom In</button>
+    <button id="zoom-out">Zoom Out</button>
+    <button id="reset-view">Reset View</button>
+  </div>
 
 <script>
 // d3.schemeCategory10
@@ -87,7 +108,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       },
     },
     edge: {
-      width: (link) => Math.log((link.value || 0) + 1) + 1,
+      width: link => Math.log((link.value || 0) + 1) + 1,
       color: '#cccccc',
     },
   };
@@ -129,6 +150,113 @@ window.addEventListener('DOMContentLoaded', async () => {
   pixiGraph.on('edgeMouseout', (event, edgeKey) => console.log('edgeMouseout', event, edgeKey));
   pixiGraph.on('edgeMousedown', (event, edgeKey) => console.log('edgeMousedown', event, edgeKey));
   pixiGraph.on('edgeMouseup', (event, edgeKey) => console.log('edgeMouseup', event, edgeKey));
+
+  const minX = graph.nodes().reduce((acc, node) => Math.min(acc, graph.getNodeAttribute(node, 'x')), Infinity);
+  const maxX = graph.nodes().reduce((acc, node) => Math.max(acc, graph.getNodeAttribute(node, 'x')), -Infinity);
+  const minY = graph.nodes().reduce((acc, node) => Math.min(acc, graph.getNodeAttribute(node, 'y')), Infinity);
+  const maxY = graph.nodes().reduce((acc, node) => Math.max(acc, graph.getNodeAttribute(node, 'y')), -Infinity);
+
+  const addNode = () => {
+    const id = Math.floor(Math.random() * 10e12).toString(36);
+    const x = minX + Math.random() * (maxX - minX);
+    const y = minY + Math.random() * (maxY - minY);
+    const node = { id, x, y };
+
+    graph.addNode(node.id, node);
+  };
+  document.getElementById('add-node').addEventListener('click', addNode);
+
+  const addEdge = () => {
+    const nodeKeys = graph.nodes();
+    let source, target;
+    do {
+      source = nodeKeys[Math.floor((nodeKeys.length - 1) * Math.random())];
+      target = nodeKeys[Math.floor((nodeKeys.length - 1) * Math.random())];
+    } while (graph.edge(source, target));
+    const link = { source, target };
+
+    graph.addEdge(link.source, link.target);
+  };
+  document.getElementById('add-edge').addEventListener('click', addEdge);
+
+  const dropNode = () => {
+    const nodeKeys = graph.nodes();
+    const nodeKey = nodeKeys[Math.floor((nodeKeys.length - 1) * Math.random())];
+
+    graph.dropNode(nodeKey);
+  };
+  document.getElementById('drop-node').addEventListener('click', dropNode);
+
+  const dropEdge = () => {
+    const edgeKeys = graph.edges();
+    const edgeKey = edgeKeys[Math.floor((edgeKeys.length - 1) * Math.random())];
+
+    graph.dropEdge(edgeKey);
+  };
+  document.getElementById('drop-edge').addEventListener('click', dropEdge);
+
+  const clear = () => {
+    graph.clear();
+  };
+  document.getElementById('clear').addEventListener('click', clear);
+
+  const clearEdges = () => {
+    graph.clearEdges();
+  };
+  document.getElementById('clear-edges').addEventListener('click', clearEdges);
+
+  const zoomIn = () => {
+    pixiGraph.zoomIn();
+  };
+  document.getElementById('zoom-in').addEventListener('click', zoomIn);
+
+  const zoomOut = () => {
+    pixiGraph.zoomOut();
+  };
+  document.getElementById('zoom-out').addEventListener('click', zoomOut);
+
+  const updateNode = () => {
+    const nodeKeys = graph.nodes();
+    const nodeKey = nodeKeys[Math.floor((nodeKeys.length - 1) * Math.random())];
+    const group = graph.getNodeAttribute(nodeKey, 'group');
+
+    graph.setNodeAttribute(nodeKey, 'group', (group + 1) % colors.length);
+  };
+  document.getElementById('update-node').addEventListener('click', updateNode);
+
+  const updateEdge = () => {
+    const edgeKeys = graph.edges();
+    const edgeKey = edgeKeys[Math.floor((edgeKeys.length - 1) * Math.random())];
+    const value = graph.getEdgeAttribute(edgeKey, 'value');
+
+    graph.setEdgeAttribute(edgeKey, 'value', value * 50);
+  };
+  document.getElementById('update-edge').addEventListener('click', updateEdge);
+
+  const updateNodes = () => {
+    graph.updateEachNodeAttributes((nodeKey, nodeAttributes) => {
+      return {
+        ...nodeAttributes,
+        group: (nodeAttributes.group + 1) % colors.length
+      };
+    });
+  };
+  document.getElementById('update-nodes').addEventListener('click', updateNodes);
+
+  const updateEdges = () => {
+    graph.updateEachEdgeAttributes((edgeKey, edgeAttributes) => {
+      return {
+        ...edgeAttributes,
+        value: edgeAttributes.value * 50
+      };
+    });
+  };
+  document.getElementById('update-edges').addEventListener('click', updateEdges);
+
+  const resetView = () => {
+    pixiGraph.resetView();
+  };
+  document.getElementById('reset-view').addEventListener('click', resetView);
 });
 </script>
 
