@@ -216,8 +216,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // update style
     node.hovered = true;
-    const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
-    this.updateNodeStyle(nodeKey, nodeAttributes);
+    this.updateNodeStyleByKey(nodeKey);
 
     // move to front
     const nodeIndex = this.nodeLayer.getChildIndex(node.nodeGfx);
@@ -239,8 +238,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // update style
     node.hovered = false;
-    const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
-    this.updateNodeStyle(nodeKey, nodeAttributes);
+    this.updateNodeStyleByKey(nodeKey);
 
     // move to front
     const nodeIndex = this.frontNodeLayer.getChildIndex(node.nodeGfx);
@@ -262,12 +260,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // update style
     edge.hovered = true;
-    const edgeAttributes = this.graph.getEdgeAttributes(edgeKey);
-    const sourceNodeKey = this.graph.source(edgeKey);
-    const targetNodeKey = this.graph.target(edgeKey);
-    const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
-    const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
-    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
+    this.updateEdgeStyleByKey(edgeKey);
 
     // move to front
     const edgeIndex = this.edgeLayer.getChildIndex(edge.edgeGfx);
@@ -285,12 +278,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // update style
     edge.hovered = false;
-    const edgeAttributes = this.graph.getEdgeAttributes(edgeKey);
-    const sourceNodeKey = this.graph.source(edgeKey);
-    const targetNodeKey = this.graph.target(edgeKey);
-    const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
-    const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
-    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
+    this.updateEdgeStyleByKey(edgeKey);
 
     // move back
     const edgeIndex = this.frontEdgeLayer.getChildIndex(edge.edgeGfx);
@@ -305,13 +293,8 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.graph.setNodeAttribute(nodeKey, 'y', point.y);
 
     // update style
-    const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
-    this.updateNodeStyle(nodeKey, nodeAttributes);
-    this.graph.forEachEdge(nodeKey, (edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
-      if (sourceNodeKey === nodeKey || targetNodeKey === nodeKey) {
-        this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
-      }
-    });
+    this.updateNodeStyleByKey(nodeKey);
+    this.graph.edges(nodeKey).forEach(this.updateEdgeStyleByKey.bind(this));
   }
 
   private enableNodeDragging() {
@@ -340,13 +323,8 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private createGraph() {
-    this.graph.forEachNode(nodeKey => {
-      this.createNode(nodeKey);
-    });
-
-    this.graph.forEachEdge(edgeKey => {
-      this.createEdge(edgeKey);
-    });
+    this.graph.forEachNode(this.createNode.bind(this));
+    this.graph.forEachEdge(this.createEdge.bind(this));
   }
 
   private createNode(nodeKey: string) {
@@ -415,13 +393,13 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private updateGraphStyle() {
-    this.graph.forEachNode((nodeKey, nodeAttributes) => {
-      this.updateNodeStyle(nodeKey, nodeAttributes);
-    });
+    this.graph.forEachNode(this.updateNodeStyle.bind(this));
+    this.graph.forEachEdge(this.updateEdgeStyle.bind(this));
+  }
 
-    this.graph.forEachEdge((edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes) => {
-      this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
-    });
+  private updateNodeStyleByKey(nodeKey: string) {
+    const nodeAttributes = this.graph.getNodeAttributes(nodeKey);
+    this.updateNodeStyle(nodeKey, nodeAttributes);
   }
 
   private updateNodeStyle(nodeKey: string, nodeAttributes: NodeAttributes) {
@@ -433,6 +411,15 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node, node.hovered ? this.hoverStyle.node : undefined];
     const nodeStyle = resolveStyleDefinitions<NodeStyle, NodeAttributes>(nodeStyleDefinitions, nodeAttributes);
     node.updateStyle(nodeStyle, this.textureCache);
+  }
+
+  private updateEdgeStyleByKey(edgeKey: string) {
+    const edgeAttributes = this.graph.getEdgeAttributes(edgeKey);
+    const sourceNodeKey = this.graph.source(edgeKey);
+    const targetNodeKey = this.graph.target(edgeKey);
+    const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
+    const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
+    this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
   }
 
   private updateEdgeStyle(edgeKey: string, edgeAttributes: EdgeAttributes, _sourceNodeKey: string, _targetNodeKey: string, sourceNodeAttributes: NodeAttributes, targetNodeAttributes: NodeAttributes) {
