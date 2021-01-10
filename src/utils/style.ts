@@ -41,9 +41,12 @@ export type StyleDefinition<Style, Attributes> =
   {[Key in keyof Style]?: StyleDefinition<Style[Key], Attributes>} |
   Style;
 
+export type NodeStyleDefinition<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes> = StyleDefinition<NodeStyle, NodeAttributes>;
+export type EdgeStyleDefinition<EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> = StyleDefinition<EdgeStyle, EdgeAttributes>;
+
 export interface GraphStyleDefinition<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
-  node?: StyleDefinition<NodeStyle, NodeAttributes>;
-  edge?: StyleDefinition<EdgeStyle, EdgeAttributes>;
+  node?: NodeStyleDefinition<NodeAttributes>;
+  edge?: EdgeStyleDefinition<EdgeAttributes>;
 }
 
 export function resolveStyleDefinition<Style, Attributes>(styleDefinition: StyleDefinition<Style, Attributes>, attributes: Attributes): Style {

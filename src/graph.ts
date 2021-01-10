@@ -4,7 +4,7 @@ import { Cull } from '@pixi-essentials/cull';
 import * as Graphology from 'graphology-types';
 import * as ResourceLoader from 'resource-loader';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import { GraphStyleDefinition, NodeStyle, EdgeStyle, resolveStyleDefinitions } from './utils/style';
+import { GraphStyleDefinition, resolveStyleDefinitions } from './utils/style';
 import { TextType } from './utils/text';
 import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
 import { TextureCache } from './texture-cache';
@@ -520,7 +520,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     node.updatePosition(nodePosition);
 
     const nodeStyleDefinitions = [DEFAULT_STYLE.node, this.style.node, node.hovered ? this.hoverStyle.node : undefined];
-    const nodeStyle = resolveStyleDefinitions<NodeStyle, NodeAttributes>(nodeStyleDefinitions, nodeAttributes);
+    const nodeStyle = resolveStyleDefinitions(nodeStyleDefinitions, nodeAttributes);
     node.updateStyle(nodeStyle, this.textureCache);
   }
 
@@ -543,7 +543,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     edge.updatePosition(sourceNodePosition, targetNodePosition);
 
     const edgeStyleDefinitions = [DEFAULT_STYLE.edge, this.style.edge, edge.hovered ? this.hoverStyle.edge : undefined];
-    const edgeStyle = resolveStyleDefinitions<EdgeStyle, EdgeAttributes>(edgeStyleDefinitions, edgeAttributes);
+    const edgeStyle = resolveStyleDefinitions(edgeStyleDefinitions, edgeAttributes);
     edge.updateStyle(edgeStyle, this.textureCache);
   }
 
