@@ -195,7 +195,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   destroy() {
-    this.graph.off = this.graph.removeListener; // TODO: remove after PR is merged https://github.com/graphology/graphology/pull/189
     this.graph.off('nodeAdded', this.onGraphNodeAddedBound);
     this.graph.off('edgeAdded', this.onGraphEdgeAddedBound);
     this.graph.off('nodeDropped', this.onGraphNodeDroppedBound);

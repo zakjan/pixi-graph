@@ -1,5 +1,7 @@
 # Changelog
 
+- remove Graphology hotfix
+
 ## 1.2.0
 
 - listen and apply graph changes
