@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+
+- listen and apply graph changes
 ## 1.1.5
 
 - use tiny-typed-emitter for typed events
