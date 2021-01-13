@@ -38,6 +38,8 @@
     <button id="update-edge">Update Edge</button>
     <button id="update-nodes">Update Nodes</button>
     <button id="update-edges">Update Edges</button>
+    <button id="export">Export</button>
+    <button id="import">Import</button>
     <div style="height: 10px"></div>
     <button id="zoom-in">Zoom In</button>
     <button id="zoom-out">Zoom Out</button>
@@ -257,6 +259,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     pixiGraph.resetView();
   };
   document.getElementById('reset-view').addEventListener('click', resetView);
+
+  let serializedGraph;
+  const exportGraph = () => {
+    serializedGraph = graph.export();
+    console.log(serializedGraph);
+  };
+  document.getElementById('export').addEventListener('click', exportGraph);
+
+  const importGraph = () => {
+    graph.import(serializedGraph);
+  };
+  document.getElementById('import').addEventListener('click', importGraph);
 });
 </script>
 
