@@ -42,6 +42,8 @@ const DEFAULT_STYLE: GraphStyleDefinition = {
   },
 };
 
+const WORLD_PADDING = 100;
+
 export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
   container: HTMLElement;
   graph: Graphology.AbstractGraph<NodeAttributes, EdgeAttributes>;
@@ -235,16 +237,20 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const maxX = Math.max(...nodesX);
     const minY = Math.min(...nodesY);
     const maxY = Math.max(...nodesY);
-    const width = Math.abs(maxX - minX);
-    const height = Math.abs(maxY - minY);
-    const center = new PIXI.Point(minX + width / 2, minY + height / 2);
 
-    const padding = 100;
-    const totalWidth = width + padding * 2;
-    const totalHeight = height + padding * 2;
+    const graphWidth = Math.abs(maxX - minX);
+    const graphHeight = Math.abs(maxY - minY);
+    const graphCenter = new PIXI.Point(minX + graphWidth / 2, minY + graphHeight / 2);
+
+    const worldWidth = graphWidth + WORLD_PADDING * 2;
+    const worldHeight = graphHeight + WORLD_PADDING * 2;
     
-    this.viewport.center = center;
-    this.viewport.fit(true, totalWidth, totalHeight);
+    // TODO: update worldWidth/worldHeight when graph is updated?
+    this.viewport.resize(this.container.clientWidth, this.container.clientHeight, worldWidth, worldHeight);
+
+    this.viewport.setZoom(1); // otherwise scale is 0 when initialized in React useEffect
+    this.viewport.center = graphCenter;
+    this.viewport.fit(true);
   }
 
   private onGraphNodeAdded(data: { key: string, attributes: NodeAttributes }) {
