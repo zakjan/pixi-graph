@@ -1,5 +1,7 @@
 # Changelog
 
+# 1.2.1
+
 - fix initialization in React useEffect
 - remove Graphology hotfix
 
