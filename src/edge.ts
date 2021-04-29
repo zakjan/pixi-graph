@@ -1,4 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Container } from '@pixi/display';
+import { InteractionEvent } from '@pixi/interaction';
+import { IPointData } from '@pixi/math';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { createEdge, updateEdgeStyle, updateEdgeVisibility } from './renderers/edge';
 import { EdgeStyle } from './utils/style';
@@ -13,8 +15,8 @@ interface PixiEdgeEvents {
 }
 
 export class PixiEdge extends TypedEmitter<PixiEdgeEvents> {
-  edgeGfx: PIXI.Container;
-  edgePlaceholderGfx: PIXI.Container;
+  edgeGfx: Container;
+  edgePlaceholderGfx: Container;
 
   hovered: boolean = false;
 
@@ -22,23 +24,23 @@ export class PixiEdge extends TypedEmitter<PixiEdgeEvents> {
     super();
 
     this.edgeGfx = this.createEdge();
-    this.edgePlaceholderGfx = new PIXI.Container();
+    this.edgePlaceholderGfx = new Container();
   }
 
   createEdge() {
-    const edgeGfx = new PIXI.Container();
+    const edgeGfx = new Container();
     edgeGfx.interactive = true;
     edgeGfx.buttonMode = true;
-    edgeGfx.on('mousemove', (event: PIXI.InteractionEvent) => this.emit('mousemove', event.data.originalEvent as MouseEvent));
-    edgeGfx.on('mouseover', (event: PIXI.InteractionEvent) => this.emit('mouseover', event.data.originalEvent as MouseEvent));
-    edgeGfx.on('mouseout', (event: PIXI.InteractionEvent) => this.emit('mouseout', event.data.originalEvent as MouseEvent));
-    edgeGfx.on('mousedown', (event: PIXI.InteractionEvent) => this.emit('mousedown', event.data.originalEvent as MouseEvent));
-    edgeGfx.on('mouseup', (event: PIXI.InteractionEvent) => this.emit('mouseup', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mousemove', (event: InteractionEvent) => this.emit('mousemove', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mouseover', (event: InteractionEvent) => this.emit('mouseover', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mouseout', (event: InteractionEvent) => this.emit('mouseout', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mousedown', (event: InteractionEvent) => this.emit('mousedown', event.data.originalEvent as MouseEvent));
+    edgeGfx.on('mouseup', (event: InteractionEvent) => this.emit('mouseup', event.data.originalEvent as MouseEvent));
     createEdge(edgeGfx);
     return edgeGfx;
   }
 
-  updatePosition(sourceNodePosition: PIXI.IPointData, targetNodePosition: PIXI.IPointData) {
+  updatePosition(sourceNodePosition: IPointData, targetNodePosition: IPointData) {
     const position = { x: (sourceNodePosition.x + targetNodePosition.x) / 2, y: (sourceNodePosition.y + targetNodePosition.y) / 2 };
     const rotation = -Math.atan2(targetNodePosition.x - sourceNodePosition.x, targetNodePosition.y - sourceNodePosition.y);
     const length = Math.hypot(targetNodePosition.x - sourceNodePosition.x, targetNodePosition.y - sourceNodePosition.y);

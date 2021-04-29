@@ -13,9 +13,6 @@ const bundle = (format, filename, options = {}) => ({
     format: format,
     name: 'PixiGraph',
     sourcemap: true,
-    globals: {
-      'pixi.js': 'PIXI',
-    },
   },
   external: [
     ...Object.keys(pkg.peerDependencies),

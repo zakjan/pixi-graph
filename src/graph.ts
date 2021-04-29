@@ -1,8 +1,15 @@
-import * as PIXI from 'pixi.js';
+import { Application } from '@pixi/app';
+import { TickerPlugin } from '@pixi/ticker';
+import { AppLoaderPlugin, Loader } from '@pixi/loaders';
+import { BitmapFontLoader } from '@pixi/text-bitmap';
+import { Renderer, BatchRenderer } from '@pixi/core';
+import { InteractionManager } from '@pixi/interaction';
+import { Container } from '@pixi/display';
+import { Point, IPointData } from '@pixi/math';
 import { Viewport } from 'pixi-viewport';
 import { Cull } from '@pixi-essentials/cull';
-import * as Graphology from 'graphology-types';
-import * as ResourceLoader from 'resource-loader';
+import { AbstractGraph } from 'graphology-types';
+import { IAddOptions } from 'resource-loader';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { GraphStyleDefinition, resolveStyleDefinitions } from './utils/style';
 import { TextType } from './utils/text';
@@ -10,6 +17,12 @@ import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
 import { TextureCache } from './texture-cache';
 import { PixiNode } from './node';
 import { PixiEdge } from './edge';
+
+Application.registerPlugin(TickerPlugin);
+Application.registerPlugin(AppLoaderPlugin);
+Loader.registerPlugin(BitmapFontLoader);
+Renderer.registerPlugin('batch', BatchRenderer);
+Renderer.registerPlugin('interaction', InteractionManager);
 
 const DEFAULT_STYLE: GraphStyleDefinition = {
   node: {
@@ -46,10 +59,10 @@ const WORLD_PADDING = 100;
 
 export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
   container: HTMLElement;
-  graph: Graphology.AbstractGraph<NodeAttributes, EdgeAttributes>;
+  graph: AbstractGraph<NodeAttributes, EdgeAttributes>;
   style: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
   hoverStyle: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
-  resources?: ResourceLoader.IAddOptions[];
+  resources?: IAddOptions[];
 }
 
 interface PixiGraphEvents {
@@ -69,21 +82,21 @@ interface PixiGraphEvents {
 
 export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> extends TypedEmitter<PixiGraphEvents> {
   container: HTMLElement;
-  graph: Graphology.AbstractGraph<NodeAttributes, EdgeAttributes>;
+  graph: AbstractGraph<NodeAttributes, EdgeAttributes>;
   style: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
   hoverStyle: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
-  resources?: ResourceLoader.IAddOptions[];
+  resources?: IAddOptions[];
 
-  private app: PIXI.Application;
+  private app: Application;
   private textureCache: TextureCache;
   private viewport: Viewport;
   private resizeObserver: ResizeObserver;
-  private edgeLayer: PIXI.Container;
-  private frontEdgeLayer: PIXI.Container;
-  private nodeLayer: PIXI.Container;
-  private nodeLabelLayer: PIXI.Container;
-  private frontNodeLayer: PIXI.Container;
-  private frontNodeLabelLayer: PIXI.Container;
+  private edgeLayer: Container;
+  private frontEdgeLayer: Container;
+  private nodeLayer: Container;
+  private nodeLabelLayer: Container;
+  private frontNodeLayer: Container;
+  private frontNodeLabelLayer: Container;
   private nodeKeyToNodeObject = new Map<string, PixiNode>();
   private edgeKeyToEdgeObject = new Map<string, PixiEdge>();
 
@@ -117,7 +130,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     }
 
     // create PIXI application
-    this.app = new PIXI.Application({
+    this.app = new Application({
       resizeTo: this.container,
       resolution: window.devicePixelRatio,
       transparent: true,
@@ -129,7 +142,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.app.renderer.plugins.interaction.moveWhenInside = true;
     this.app.view.addEventListener('wheel', event => { event.preventDefault() });
 
-    this.textureCache = new TextureCache(this.app);
+    this.textureCache = new TextureCache(this.app.renderer);
 
     // create PIXI viewport
     this.viewport = new Viewport({
@@ -145,12 +158,12 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.app.stage.addChild(this.viewport);
 
     // create layers
-    this.edgeLayer = new PIXI.Container();
-    this.frontEdgeLayer = new PIXI.Container();
-    this.nodeLayer = new PIXI.Container();
-    this.nodeLabelLayer = new PIXI.Container();
-    this.frontNodeLayer = new PIXI.Container();
-    this.frontNodeLabelLayer = new PIXI.Container();
+    this.edgeLayer = new Container();
+    this.frontEdgeLayer = new Container();
+    this.nodeLayer = new Container();
+    this.nodeLabelLayer = new Container();
+    this.frontNodeLayer = new Container();
+    this.frontNodeLabelLayer = new Container();
     this.viewport.addChild(this.edgeLayer);
     this.viewport.addChild(this.frontEdgeLayer);
     this.viewport.addChild(this.nodeLayer);
@@ -240,7 +253,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     const graphWidth = Math.abs(maxX - minX);
     const graphHeight = Math.abs(maxY - minY);
-    const graphCenter = new PIXI.Point(minX + graphWidth / 2, minY + graphHeight / 2);
+    const graphCenter = new Point(minX + graphWidth / 2, minY + graphHeight / 2);
 
     const worldWidth = graphWidth + WORLD_PADDING * 2;
     const worldHeight = graphHeight + WORLD_PADDING * 2;
@@ -387,7 +400,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.frontEdgeLayer.addChild(edge.edgePlaceholderGfx);
   }
 
-  private moveNode(nodeKey: string, point: PIXI.IPointData) {
+  private moveNode(nodeKey: string, point: IPointData) {
     this.graph.setNodeAttribute(nodeKey, 'x', point.x);
     this.graph.setNodeAttribute(nodeKey, 'y', point.y);
 
@@ -404,7 +417,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   }
 
   private onDocumentMouseMove(event: MouseEvent) {
-    const eventPosition = new PIXI.Point(event.offsetX, event.offsetY);
+    const eventPosition = new Point(event.offsetX, event.offsetY);
     const worldPosition = this.viewport.toWorld(eventPosition);
 
     if (this.mousedownNodeKey) {
@@ -555,11 +568,11 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private updateGraphVisibility() {
     // culling
     const cull = new Cull();
-    cull.addAll((this.viewport.children as PIXI.Container[]).map(layer => layer.children).flat());
+    cull.addAll((this.viewport.children as Container[]).map(layer => layer.children).flat());
     cull.cull(this.app.renderer.screen);
     // console.log(
-    //   Array.from((cull as any)._targetList as Set<PIXI.DisplayObject>).filter(x => x.visible === true).length,
-    //   Array.from((cull as any)._targetList as Set<PIXI.DisplayObject>).filter(x => x.visible === false).length
+    //   Array.from((cull as any)._targetList as Set<DisplayObject>).filter(x => x.visible === true).length,
+    //   Array.from((cull as any)._targetList as Set<DisplayObject>).filter(x => x.visible === false).length
     // );
 
     // levels of detail

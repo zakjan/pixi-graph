@@ -1,4 +1,5 @@
-import * as PIXI from 'pixi.js';
+import { Text } from '@pixi/text';
+import { BitmapText } from '@pixi/text-bitmap';
 
 const WHITE = 0xffffff;
 
@@ -9,7 +10,7 @@ export enum TextType {
   // see https://github.com/PixelsCommander/pixi-sdf-text/issues/12
 }
 
-// TODO: use PIXI.TextStyle directly?
+// TODO: use TextStyle from @pixi/text directly?
 export interface TextStyle {
   fontFamily: string;
   fontSize: number;
@@ -18,14 +19,14 @@ export interface TextStyle {
 export function textToPixi(type: TextType, content: string, style: TextStyle) {
   let text;
   if (type === TextType.TEXT) {
-    // TODO: convert to bitmap font with PIXI.BitmapFont.from?
-    text = new PIXI.Text(content, {
+    // TODO: convert to bitmap font with BitmapFont.from?
+    text = new Text(content, {
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
       fill: WHITE
     });
   } else if (type === TextType.BITMAP_TEXT) {
-    text = new PIXI.BitmapText(content, {
+    text = new BitmapText(content, {
       fontName: style.fontFamily,
       fontSize: style.fontSize
     });
