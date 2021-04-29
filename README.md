@@ -17,14 +17,14 @@ Developing a full-featured graph visualization library is a significant effort. 
 ## Install
 
 ```
-npm install graphology pixi.js pixi-graph
+npm install graphology pixi-graph
 ```
 
 or
 
 ```html
 <script src="https://unpkg.com/graphology@0.18.0/dist/graphology.umd.js"></script>
-<script src="https://unpkg.com/pixi-graph@1.2.1/dist/pixi-graph.umd.min.js"></script>
+<script src="https://unpkg.com/pixi-graph@1.3.0/dist/pixi-graph.umd.min.js"></script>
 ```
 
 ## Usage

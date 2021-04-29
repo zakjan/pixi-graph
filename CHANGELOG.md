@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.3.0
+
 - update to Pixi v6 (using separate Pixi packages as regular dependencies, instead of previously used Pixi bundle as peer dependency)
 
 ## 1.2.1
