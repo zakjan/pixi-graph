@@ -1,5 +1,5 @@
 {
-  "name": "pixi-graph",
+  "name": "pixi-graph-fork",
   "version": "1.3.0",
   "description": "Graph visualization library using PIXI.js and Graphology",
   "keywords": [
@@ -8,7 +8,7 @@
   ],
   "license": "MIT",
   "author": "Jan Zak <zj@zakjan.cz>",
-  "repository": "github:zakjan/pixi-graph",
+  "repository": "github:AlexRoar/pixi-graph",
   "main": "dist/pixi-graph.cjs.js",
   "module": "dist/pixi-graph.esm.js",
   "browser": "dist/pixi-graph.umd.min.js",
