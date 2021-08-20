@@ -179,6 +179,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // preload resources
     if (this.resources) {
+      // @ts-ignore
       this.app.loader.add(this.resources);
     }
     this.app.loader.load(() => {
