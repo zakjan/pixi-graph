@@ -17,6 +17,7 @@ import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
 import { TextureCache } from './texture-cache';
 import { PixiNode } from './node';
 import { PixiEdge } from './edge';
+import {LINE_SCALE_MODE, settings} from '@pixi/graphics-smooth';
 
 Application.registerPlugin(TickerPlugin);
 Application.registerPlugin(AppLoaderPlugin);
@@ -128,6 +129,8 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     if (!(this.container instanceof HTMLElement)) {
       throw new Error('container should be a HTMLElement');
     }
+
+    settings.LINE_SCALE_MODE = LINE_SCALE_MODE.NORMAL
 
     // create PIXI application
     this.app = new Application({
