@@ -1,7 +1,7 @@
 import { Container } from '@pixi/display';
 import { Circle } from '@pixi/math';
 import { Sprite } from '@pixi/sprite';
-import { Graphics } from '@pixi/graphics';
+import { SmoothGraphics as Graphics } from '@pixi/graphics-smooth';
 import '@pixi/mixin-get-child-by-name';
 import { colorToPixi } from '../utils/color';
 import { NodeStyle } from '../utils/style';
