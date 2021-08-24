@@ -6,10 +6,10 @@ import { Renderer, BatchRenderer } from '@pixi/core';
 import { InteractionManager } from '@pixi/interaction';
 import { Container } from '@pixi/display';
 import { Point, IPointData } from '@pixi/math';
+import { IAddOptions } from '@pixi/loaders';
 import { Viewport } from 'pixi-viewport';
 import { Cull } from '@pixi-essentials/cull';
 import { AbstractGraph } from 'graphology-types';
-import { IAddOptions } from 'resource-loader';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { GraphStyleDefinition, resolveStyleDefinitions } from './utils/style';
 import { TextType } from './utils/text';
@@ -17,7 +17,7 @@ import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
 import { TextureCache } from './texture-cache';
 import { PixiNode } from './node';
 import { PixiEdge } from './edge';
-import {LINE_SCALE_MODE, settings} from '@pixi/graphics-smooth';
+import { LINE_SCALE_MODE, settings } from '@pixi/graphics-smooth';
 
 Application.registerPlugin(TickerPlugin);
 Application.registerPlugin(AppLoaderPlugin);
@@ -130,7 +130,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
       throw new Error('container should be a HTMLElement');
     }
 
-    settings.LINE_SCALE_MODE = LINE_SCALE_MODE.NORMAL
+    settings.LINE_SCALE_MODE = LINE_SCALE_MODE.NORMAL;
 
     // create PIXI application
     this.app = new Application({
@@ -182,7 +182,6 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
 
     // preload resources
     if (this.resources) {
-      // @ts-ignore
       this.app.loader.add(this.resources);
     }
     this.app.loader.load(() => {

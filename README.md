@@ -159,10 +159,10 @@ const pixiGraph = new PixiGraph.PixiGraph({ ..., style, hoverStyle });
 ```ts
 export interface GraphOptions<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
   container: HTMLElement;
-  graph: Graphology.AbstractGraph<NodeAttributes, EdgeAttributes>;
+  graph: AbstractGraph<NodeAttributes, EdgeAttributes>;
   style: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
   hoverStyle: GraphStyleDefinition<NodeAttributes, EdgeAttributes>;
-  resources?: ResourceLoader.IAddOptions[];
+  resources?: IAddOptions[];
 }
 
 export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
