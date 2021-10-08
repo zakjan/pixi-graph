@@ -4,7 +4,7 @@ import { Texture } from "@pixi/core";
 import { BitmapText } from "@pixi/text-bitmap";
 import "@pixi/mixin-get-child-by-name";
 import { colorToPixi } from "../utils/color";
-import { NodeStyle } from "../utils/style";
+import { EdgeStyle } from "../utils/style";
 import { textToPixi } from "../utils/text";
 import { TextureCache } from "../texture-cache";
 
@@ -13,7 +13,7 @@ const DELIMETER = "::";
 const NODE_LABEL_BACKGROUND = "NODE_LABEL_BACKGROUND";
 const NODE_LABEL_TEXT = "NODE_LABEL_TEXT";
 
-export function createNodeLabel(nodeLabelGfx: Container) {
+export function createEdgeLabel(nodeLabelGfx: Container) {
   // nodeLabelGfx -> nodeLabelBackground
   const nodeLabelBackground = new Sprite(Texture.WHITE);
   nodeLabelBackground.name = NODE_LABEL_BACKGROUND;
@@ -27,12 +27,12 @@ export function createNodeLabel(nodeLabelGfx: Container) {
   nodeLabelGfx.addChild(nodeLabelText);
 }
 
-export function updateNodeLabelStyle(
+export function updateEdgeLabelStyle(
   nodeLabelGfx: Container,
-  nodeStyle: NodeStyle,
+  nodeStyle: EdgeStyle,
   textureCache: TextureCache
 ) {
-  const nodeOuterSize = nodeStyle.size + nodeStyle.border.width;
+  const edgeOuterSize = nodeStyle.width;
 
   const nodeLabelTextTextureKey = [
     NODE_LABEL_TEXT,
@@ -40,6 +40,7 @@ export function updateNodeLabelStyle(
     nodeStyle.label.fontSize,
     nodeStyle.label.content,
   ].join(DELIMETER);
+
   const nodeLabelTextTexture = textureCache.get(nodeLabelTextTextureKey, () => {
     const text = textToPixi(nodeStyle.label.type, nodeStyle.label.content, {
       fontFamily: nodeStyle.label.fontFamily,
@@ -52,13 +53,23 @@ export function updateNodeLabelStyle(
   const nodeLabelBackground = nodeLabelGfx.getChildByName!(
     NODE_LABEL_BACKGROUND
   ) as Sprite;
+
   nodeLabelBackground.y =
-    nodeOuterSize +
+    edgeOuterSize +
     (nodeLabelTextTexture.height + nodeStyle.label.padding * 2) / 2;
+
   nodeLabelBackground.width =
     nodeLabelTextTexture.width + nodeStyle.label.padding * 2;
+
   nodeLabelBackground.height =
     nodeLabelTextTexture.height + nodeStyle.label.padding * 2;
+
+  // nodeLabelBackground.y = edgeOuterSize + nodeLabelTextTexture.height;
+
+  // nodeLabelBackground.width = nodeLabelTextTexture.width;
+
+  // nodeLabelBackground.height = nodeLabelTextTexture.height + 10;
+
   [nodeLabelBackground.tint, nodeLabelBackground.alpha] = colorToPixi(
     nodeStyle.label.backgroundColor
   );
@@ -66,15 +77,19 @@ export function updateNodeLabelStyle(
   // nodeLabelGfx -> nodeLabelText
   const nodeLabelText = nodeLabelGfx.getChildByName!(NODE_LABEL_TEXT) as Sprite;
   nodeLabelText.texture = nodeLabelTextTexture;
+
   nodeLabelText.y =
-    nodeOuterSize +
+    edgeOuterSize +
     (nodeLabelTextTexture.height + nodeStyle.label.padding * 2) / 2;
+
+  // nodeLabelText.y = edgeOuterSize + nodeLabelTextTexture.height;
+
   [nodeLabelText.tint, nodeLabelText.alpha] = colorToPixi(
     nodeStyle.label.color
   );
 }
 
-export function updateNodeLabelVisibility(
+export function updateEdgeLabelVisibility(
   nodeLabelGfx: Container,
   zoomStep: number
 ) {
