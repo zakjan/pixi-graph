@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>pixi-graph</title>
+  <script src="https://unpkg.com/graphology@0.19.3/dist/graphology.umd.js"></script>
+  <script src="https://unpkg.com/graphology-layout-forceatlas2@0.4.4/build/graphology-layout-forceatlas2.js"></script>
+  <script src="https://unpkg.com/fontfaceobserver@2.1.0/fontfaceobserver.standalone.js"></script>
+  <script src="https://unpkg.com/pixi-graph@1.3.1/dist/pixi-graph.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+    }
+    #graph {
+      width: 100vw;
+      height: 100vh;
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="controls">
+  <button id="add-node">Add Node</button>
+  <button id="add-edge">Add Edge</button>
+  <button id="drop-node">Drop Node</button>
+  <button id="drop-edge">Drop Edge</button>
+  <button id="clear">Clear</button>
+  <button id="clear-edges">Clear Edges</button>
+  <button id="update-node">Update Node</button>
+  <button id="update-edge">Update Edge</button>
+  <button id="update-nodes">Update Nodes</button>
+  <button id="update-edges">Update Edges</button>
+  <button id="export">Export</button>
+  <button id="import">Import</button>
+  <div style="height: 10px"></div>
+  <button id="zoom-in">Zoom In</button>
+  <button id="zoom-out">Zoom Out</button>
+  <button id="reset-view">Reset View</button>
+</div>
+<script src="index.js"></script>
+
+
+</body>
+</html>
