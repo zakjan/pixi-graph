@@ -18,7 +18,7 @@ import { TextureCache } from "./texture-cache";
 import { PixiNode } from "./node";
 import { PixiEdge } from "./edge";
 import { LINE_SCALE_MODE, settings } from "@pixi/graphics-smooth";
-import { Graphics } from "@pixi/graphics";
+import { SmoothGraphics as Graphics } from "@pixi/graphics-smooth";
 import { colorToPixi } from "./utils/color";
 
 Application.registerPlugin(TickerPlugin);
