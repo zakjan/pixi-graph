@@ -1,6 +1,6 @@
-import deepmerge from 'deepmerge';
-import { BaseNodeAttributes, BaseEdgeAttributes } from '../attributes';
-import { TextType } from './text';
+import deepmerge from "deepmerge";
+import { BaseNodeAttributes, BaseEdgeAttributes } from "../attributes";
+import { TextType } from "./text";
 
 export interface GraphStyle {
   node: {
@@ -30,30 +30,41 @@ export interface GraphStyle {
   edge: {
     width: number;
     color: string;
+    arrow: boolean;
   };
 }
 
-export type NodeStyle = GraphStyle['node'];
-export type EdgeStyle = GraphStyle['edge'];
+export type NodeStyle = GraphStyle["node"];
+export type EdgeStyle = GraphStyle["edge"];
 
 export type StyleDefinition<Style, Attributes> =
-  ((attributes: Attributes) => Style) |
-  {[Key in keyof Style]?: StyleDefinition<Style[Key], Attributes>} |
-  Style;
+  | ((attributes: Attributes) => Style)
+  | { [Key in keyof Style]?: StyleDefinition<Style[Key], Attributes> }
+  | Style;
 
-export type NodeStyleDefinition<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes> = StyleDefinition<NodeStyle, NodeAttributes>;
-export type EdgeStyleDefinition<EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> = StyleDefinition<EdgeStyle, EdgeAttributes>;
+export type NodeStyleDefinition<
+  NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes
+> = StyleDefinition<NodeStyle, NodeAttributes>;
+export type EdgeStyleDefinition<
+  EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes
+> = StyleDefinition<EdgeStyle, EdgeAttributes>;
 
-export interface GraphStyleDefinition<NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes, EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes> {
+export interface GraphStyleDefinition<
+  NodeAttributes extends BaseNodeAttributes = BaseNodeAttributes,
+  EdgeAttributes extends BaseEdgeAttributes = BaseEdgeAttributes
+> {
   node?: NodeStyleDefinition<NodeAttributes>;
   edge?: EdgeStyleDefinition<EdgeAttributes>;
 }
 
-export function resolveStyleDefinition<Style, Attributes>(styleDefinition: StyleDefinition<Style, Attributes>, attributes: Attributes): Style {
+export function resolveStyleDefinition<Style, Attributes>(
+  styleDefinition: StyleDefinition<Style, Attributes>,
+  attributes: Attributes
+): Style {
   let style: Style;
   if (styleDefinition instanceof Function) {
     style = styleDefinition(attributes);
-  } else if (typeof styleDefinition === 'object' && styleDefinition !== null) {
+  } else if (typeof styleDefinition === "object" && styleDefinition !== null) {
     style = Object.fromEntries(
       Object.entries(styleDefinition).map(([key, styleDefinition]) => {
         return [key, resolveStyleDefinition(styleDefinition, attributes)];
@@ -65,8 +76,15 @@ export function resolveStyleDefinition<Style, Attributes>(styleDefinition: Style
   return style;
 }
 
-export function resolveStyleDefinitions<Style, Attributes>(styleDefinitions: (StyleDefinition<Style, Attributes> | undefined)[], attributes: Attributes): Style {
-  const styles = styleDefinitions.filter(x => !!x).map(styleDefinition => resolveStyleDefinition(styleDefinition!, attributes));
+export function resolveStyleDefinitions<Style, Attributes>(
+  styleDefinitions: (StyleDefinition<Style, Attributes> | undefined)[],
+  attributes: Attributes
+): Style {
+  const styles = styleDefinitions
+    .filter((x) => !!x)
+    .map((styleDefinition) =>
+      resolveStyleDefinition(styleDefinition!, attributes)
+    );
   const style = deepmerge.all<Style>(styles);
   return style;
 }
