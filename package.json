@@ -25,11 +25,15 @@
     "@pixi/constants": "^6.0.2",
     "@pixi/core": "^6.0.2",
     "@pixi/display": "^6.0.2",
+    "@pixi/graphics": "^6.3.0",
     "@pixi/graphics-smooth": "^0.0.13",
     "@pixi/interaction": "^6.1.2",
     "@pixi/loaders": "^6.1.2",
     "@pixi/math": "^6.0.2",
+    "@pixi/mesh": "^6.3.0",
     "@pixi/mixin-get-child-by-name": "^6.1.2",
+    "@pixi/runner": "^6.3.0",
+    "@pixi/settings": "^6.3.0",
     "@pixi/sprite": "^6.0.2",
     "@pixi/text": "^6.1.2",
     "@pixi/text-bitmap": "^6.1.2",
@@ -57,6 +61,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-visualizer": "^5.4.1",
+    "tslib": "^2.4.0",
     "typescript": "^4.2.4"
   }
 }

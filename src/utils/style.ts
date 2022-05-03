@@ -30,6 +30,7 @@ export interface GraphStyle {
   edge: {
     width: number;
     color: string;
+    arrow: boolean;
   };
 }
 

@@ -11,6 +11,7 @@ import { Viewport } from 'pixi-viewport';
 import { Cull } from '@pixi-essentials/cull';
 import { AbstractGraph } from 'graphology-types';
 import { TypedEmitter } from 'tiny-typed-emitter';
+import { SmoothGraphics as Graphics } from "@pixi/graphics-smooth";
 import { GraphStyleDefinition, resolveStyleDefinitions } from './utils/style';
 import { TextType } from './utils/text';
 import { BaseNodeAttributes, BaseEdgeAttributes } from './attributes';
@@ -18,6 +19,7 @@ import { TextureCache } from './texture-cache';
 import { PixiNode } from './node';
 import { PixiEdge } from './edge';
 import { LINE_SCALE_MODE, settings } from '@pixi/graphics-smooth';
+import { colorToPixi } from "./utils/color";
 
 Application.registerPlugin(TickerPlugin);
 Application.registerPlugin(AppLoaderPlugin);
@@ -53,6 +55,7 @@ const DEFAULT_STYLE: GraphStyleDefinition = {
   edge: {
     width: 1,
     color: '#cccccc',
+    arrow: true,
   },
 };
 
@@ -98,6 +101,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private nodeLabelLayer: Container;
   private frontNodeLayer: Container;
   private frontNodeLabelLayer: Container;
+  private arrowsGfx: Graphics;
   private nodeKeyToNodeObject = new Map<string, PixiNode>();
   private edgeKeyToEdgeObject = new Map<string, PixiEdge>();
 
@@ -167,12 +171,14 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.nodeLabelLayer = new Container();
     this.frontNodeLayer = new Container();
     this.frontNodeLabelLayer = new Container();
+    this.arrowsGfx = new Graphics();
     this.viewport.addChild(this.edgeLayer);
     this.viewport.addChild(this.frontEdgeLayer);
     this.viewport.addChild(this.nodeLayer);
     this.viewport.addChild(this.nodeLabelLayer);
     this.viewport.addChild(this.frontNodeLayer);
     this.viewport.addChild(this.frontNodeLabelLayer);
+    this.viewport.addChild(this.arrowsGfx);
 
     this.resizeObserver = new ResizeObserver(() => {
       this.app.resize();
@@ -283,6 +289,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     const sourceNodeAttributes = this.graph.getNodeAttributes(sourceNodeKey);
     const targetNodeAttributes = this.graph.getNodeAttributes(targetNodeKey);
     this.createEdge(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
+    this.updateArrows();
   }
 
   private onGraphNodeDropped(data: { key: string }) {
@@ -293,15 +300,18 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private onGraphEdgeDropped(data: { key: string }) {
     const edgeKey = data.key;
     this.dropEdge(edgeKey);
+    this.updateArrows();
   }
 
   private onGraphCleared() {
     Array.from(this.edgeKeyToEdgeObject.keys()).forEach(this.dropEdge.bind(this));
     Array.from(this.nodeKeyToNodeObject.keys()).forEach(this.dropNode.bind(this));
+    this.updateArrows();
   }
 
   private onGraphEdgesCleared() {
     Array.from(this.edgeKeyToEdgeObject.keys()).forEach(this.dropEdge.bind(this));
+    this.updateArrows();
   }
 
   private onGraphNodeAttributesUpdated(data: { key: string }) {
@@ -313,6 +323,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private onGraphEdgeAttributesUpdated(data: { key: string }) {
     const edgeKey = data.key;
     this.updateEdgeStyleByKey(edgeKey);
+    this.updateArrows();
   }
 
   private onGraphEachNodeAttributesUpdated() {
@@ -383,6 +394,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.frontEdgeLayer.removeChildAt(edgeIndex);
     this.edgeLayer.addChild(edge.edgePlaceholderGfx);
     this.frontEdgeLayer.addChild(edge.edgeGfx);
+    this.updateArrows();
   }
 
   private unhoverEdge(edgeKey: string) {
@@ -401,6 +413,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.frontEdgeLayer.removeChildAt(edgeIndex);
     this.edgeLayer.addChild(edge.edgeGfx);
     this.frontEdgeLayer.addChild(edge.edgePlaceholderGfx);
+    this.updateArrows();
   }
 
   private moveNode(nodeKey: string, point: IPointData) {
@@ -410,6 +423,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     // update style
     this.updateNodeStyleByKey(nodeKey);
     this.graph.edges(nodeKey).forEach(this.updateEdgeStyleByKey.bind(this));
+    this.updateArrows();
   }
 
   private enableNodeDragging() {
@@ -440,6 +454,7 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
   private createGraph() {
     this.graph.forEachNode(this.createNode.bind(this));
     this.graph.forEachEdge(this.createEdge.bind(this));
+    this.updateArrows();
   }
 
   private createNode(nodeKey: string, nodeAttributes: NodeAttributes) {
@@ -509,6 +524,85 @@ export class PixiGraph<NodeAttributes extends BaseNodeAttributes = BaseNodeAttri
     this.edgeKeyToEdgeObject.set(edgeKey, edge);
 
     this.updateEdgeStyle(edgeKey, edgeAttributes, sourceNodeKey, targetNodeKey, sourceNodeAttributes, targetNodeAttributes);
+  }
+
+  private updateArrows = () => {
+    this.arrowsGfx.clear();
+    this.graph.forEachEdge(this.createArrow.bind(this));
+    this.arrowsGfx.endFill();
+  }
+
+  private createArrow = (
+    edgeKey: string,
+    edgeAttributes: EdgeAttributes,
+    _sourceNodeKey: string,
+    targetNodeKey: string,
+    sourceNodeAttributes: NodeAttributes,
+    targetNodeAttributes: NodeAttributes
+  ) => {
+    const graphics = this.arrowsGfx;
+    const node = this.nodeKeyToNodeObject.get(targetNodeKey)!;
+    const nodeStyleDefinitions = [
+      DEFAULT_STYLE.node,
+      this.style.node,
+      node.hovered ? this.hoverStyle.node : undefined,
+    ];
+    const nodeStyle = resolveStyleDefinitions(
+      nodeStyleDefinitions,
+      targetNodeAttributes
+    );
+    const edge = this.edgeKeyToEdgeObject.get(edgeKey)!;
+    const edgeStyleDefinitions = [
+      DEFAULT_STYLE.edge,
+      this.style.edge,
+      edge.hovered ? this.hoverStyle.edge : undefined,
+    ];
+    const edgeStyle = resolveStyleDefinitions(
+      edgeStyleDefinitions,
+      edgeAttributes
+    );
+
+    if (!!edgeStyle.arrow) {
+      const [color, alpha] = colorToPixi(edgeStyle.color);
+      graphics.lineStyle(edgeStyle.width, color, alpha);
+      const link = {
+        from: { x: sourceNodeAttributes.x, y: sourceNodeAttributes.y },
+        to: { x: targetNodeAttributes.x, y: targetNodeAttributes.y },
+      };
+      const NODE_WIDTH = nodeStyle.size;
+      console.log(NODE_WIDTH, "NODE_WIDTH");
+      let dx = link.to.x - link.from.x;
+      let dy = link.to.y - link.from.y;
+      let l = Math.sqrt(dx * dx + dy * dy);
+
+      if (l === 0) return;
+
+      let nx = dx / l;
+      let ny = dy / l;
+
+      let arrowLength = 6;
+      let arrowWingsLength = 2;
+
+      let ex = link.from.x + nx * (l - NODE_WIDTH / 1.5);
+      let ey = link.from.y + ny * (l - NODE_WIDTH / 1.5);
+
+      let sx = link.from.x + nx * (l - NODE_WIDTH / 1.5 - arrowLength);
+      let sy = link.from.y + ny * (l - NODE_WIDTH / 1.5 - arrowLength);
+
+      let topX = -ny;
+      let topY = nx;
+
+      graphics.moveTo(ex, ey);
+      graphics.lineTo(
+        sx + topX * arrowWingsLength,
+        sy + topY * arrowWingsLength
+      );
+      graphics.moveTo(ex, ey);
+      graphics.lineTo(
+        sx - topX * arrowWingsLength,
+        sy - topY * arrowWingsLength
+      );
+    }
   }
 
   private dropNode(nodeKey: string) {
